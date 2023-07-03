@@ -1,13 +1,18 @@
 import atomac
+import ddddocr
 import datetime as dt
 
 from atomac.AXKeyCodeConstants import *
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from time import sleep,time
+from PIL import Image
 
-
-#企业微信
+#企业微信应用名称id
 bundle_id = 'com.tencent.WeWorkMac'
+#要登陆堡垒机的账号和密码
+qwAccount='anwei'
+qwPassword='An123456'
 
 #获取登陆验证码
 def getYzmCode():
@@ -102,11 +107,55 @@ options.add_experimental_option('detach', True)
 chrome = webdriver.Chrome(options=options)
 #设置浏览器窗口最大化
 chrome.maximize_window()
-#登陆
-chrome.get("http://www.baidu.com")
-#codeing...
+#登陆dyx
+chrome.get("https://10.157.234.151/index.php/Public/index/stra_name/sms_local")
+sleep(3)
+#这个地址一打开就说不安全，点击高级按钮然后访问真实地址就可以正常登录了
+gaojiButton = chrome.find_element(By.ID,'details-button')
+gaojiButton.click()
+sleep(1)
+#选择继续访问，点击
+jixuButton = chrome.find_element(By.ID,'proceed-link')
+jixuButton.click()
+sleep(1)
+#不出意外的话都打开了
+#输入账号
+account = chrome.find_element(By.NAME,'account')
+account.send_keys(qwAccount)
+sleep(1)
+#本地密码
+local = chrome.find_element(By.NAME,'local')
+local.send_keys(qwPassword)
+sleep(1)
+#单击按钮-发送验证码
+send_mobile_codeButton = chrome.find_element(By.ID,'send_mobile_code')
+send_mobile_codeButton.click()
+#这时候会有一个系统弹窗，说发送成功,把它关掉
+sleep(1)
+chrome.switch_to.alert.accept()
+sleep(5)
+#获取企业微信收到的验证码
 yzm = getYzmCode()
 print('获得企微验证码:',yzm)
+#短信密码填入
+sms = chrome.find_element(By.NAME,'sms')
+sms.send_keys(yzm)
+#调用图像识别，取到图片验证码
+vcodeImg = chrome.find_element(By.ID,'vcode')
+print('img:',vcodeImg)
+vcodeImg.screenshot("code.jpg")  # 下载图片
+with open("code.jpg", "rb") as fp:
+    img = fp.read()
+#识别图片验证码
+ocr = ddddocr.DdddOcr(show_ad=False)
+imgYzm = ocr.classification(None,img)
+print('识别图片验证码:',imgYzm)
+#验证码输入框
+verify = chrome.find_element(By.NAME,'verify')
+verify.send_keys(imgYzm)
+#登陆按钮触发
+submit = chrome.find_element(By.ID,'submit')
+submit.click()
 print("执行操作，完成后关闭浏览器")
 #刷新浏览器
 #chrome.refresh()
