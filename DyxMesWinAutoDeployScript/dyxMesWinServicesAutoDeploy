@@ -15,10 +15,7 @@ def getYzmCode():
     #打开企业微信
     app = pywinauto.Application(backend='uia').start(wxWorkPath)
     window = app.window(title='企业微信')
-    print("18:",window)
-    main_win =  window.window()
-    print("20:",main_win)
-    print("tree:",main_win.dump_tree())
+    print(window)
     return '123'
 
 
