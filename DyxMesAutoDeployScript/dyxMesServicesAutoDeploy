@@ -99,6 +99,18 @@ def getYzmCode():
     closeBtn.Press()
     return dxyzm
 
+#获取登陆页面的验证码,可以单击更换
+def getVcodeImg(vcodeImg):
+    print('img:',vcodeImg)
+    vcodeImg.screenshot("code.jpg")  # 下载图片
+    with open("code.jpg", "rb") as fp:
+        img = fp.read()
+    #识别图片验证码
+    ocr = ddddocr.DdddOcr(show_ad=False)
+    imgYzm = ocr.classification(img)
+    print('识别图片验证码:',imgYzm)
+    return imgYzm
+
 #谷歌浏览器驱动配置
 options = webdriver.ChromeOptions()
 #selenium默认是会执行完关闭浏览器的，这样设置一下先不关闭，最后执行手动quit即可。
@@ -142,22 +154,46 @@ sms = chrome.find_element(By.NAME,'sms')
 sms.send_keys(yzm)
 #调用图像识别，取到图片验证码
 vcodeImg = chrome.find_element(By.ID,'vcode')
-print('img:',vcodeImg)
-vcodeImg.screenshot("code.jpg")  # 下载图片
-with open("code.jpg", "rb") as fp:
-    img = fp.read()
-#识别图片验证码
-ocr = ddddocr.DdddOcr(show_ad=False)
-imgYzm = ocr.classification(img)
-print('识别图片验证码:',imgYzm)
+imgYzm = getVcodeImg(vcodeImg)
+#最多五下吧，就不信五次还有这样的验证码
+i = 1
+while i <= 5:
+    #判断验证码有没有o，O，0 这些，目前这个识别会失败，那就直接换一个新的就好了
+    if  'o' in imgYzm:
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    elif 'O' in imgYzm:
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    elif '0' in imgYzm :
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    else :
+        print(imgYzm)
+        break
+    i += 1
 #验证码输入框
 verify = chrome.find_element(By.NAME,'verify')
 verify.send_keys(imgYzm)
 #登陆按钮触发
 submit = chrome.find_element(By.ID,'submit')
 submit.click()
-print("执行操作，完成后关闭浏览器")
+print("执行操作,不出意外登陆成功!")
+#等一下加载
+sleep(5)
+#获取全局搜索按钮
+liId_all = chrome.find_element(By.ID,'liId_all')
+liId_all.click()
+sleep(5)
+#找到设备名称/IP的搜索框
+keyword = chrome.find_element(By.NAME,'keyword')
+#输入要部署的服务器ip
+keyword.send_keys('10.156.13.45')#举例
+#点击查询
+search = chrome.find_element(By.ID,'search')
+search.click()
+sleep(1)
 #刷新浏览器
 #chrome.refresh()
 #关闭浏览器
-chrome.quit()
+#chrome.quit()
