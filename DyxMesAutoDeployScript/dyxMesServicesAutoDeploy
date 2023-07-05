@@ -148,7 +148,7 @@ with open("code.jpg", "rb") as fp:
     img = fp.read()
 #识别图片验证码
 ocr = ddddocr.DdddOcr(show_ad=False)
-imgYzm = ocr.classification(None,img)
+imgYzm = ocr.classification(img)
 print('识别图片验证码:',imgYzm)
 #验证码输入框
 verify = chrome.find_element(By.NAME,'verify')
