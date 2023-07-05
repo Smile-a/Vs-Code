@@ -1,23 +1,65 @@
+import os
 import ddddocr
-import pywinauto
+import pyautogui
+import pytesseract
 import datetime as dt
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from time import sleep,time
+from pywinauto.application import Application
+from pywinauto import mouse
+from PIL import Image
+
 
 #要登陆堡垒机的账号和密码
 qwAccount='anwei'
 qwPassword='An123456'
 #企业微信地址
 wxWorkPath = 'C:\Program Files (x86)\WXWork\WXWork.exe'
+title = '企业微信'
+# 设置自动化操作时间间隔
+pyautogui.PAUSE = 0.5
 
 def getYzmCode():
-    #打开企业微信
-    app = pywinauto.Application(backend='uia').start(wxWorkPath)
-    window = app.window(title='企业微信')
-    print(window)
+    #打开企业微信应用
+    app = Application(backend='uia').start(wxWorkPath)
+    #链接到企业微信
+    app = Application(backend='uia').connect(title=title)
+    #选中企业微信窗口
+    wind_calc = app[title]
+    #获取当前窗口显示的坐标
+    coordinate = wind_calc.rectangle()
+    print(coordinate)
+
+    # 程序左边缘距离显示器左边缘的像素
+    l_coordinate = coordinate.left
+    # 程序右边缘距离显示器左边缘的像素
+    r_coordinate = coordinate.right
+    # 程序上边缘距离显示器上边缘的像素
+    t_coordinate = coordinate.top
+    # 程序下边缘距离显示器上边缘的像素
+    b_coordinate = coordinate.bottom
+
+    #选中消息
+    mouse.click(coords=(l_coordinate + 25, b_coordinate - 550))
+    #打开通讯录
+    #mouse.click(coords=(l_coordinate + 25, b_coordinate - 220))
+    #打开文档
+    #mouse.click(coords=(l_coordinate + 25, b_coordinate - 440))
+
+    # 列出支持的语言
+    #print(pytesseract.get_languages(config=''))
+    #获取图片
+    img = Image.open('code.png')
+    #识别图片内文字
+    print(pytesseract.image_to_string(img, lang='chi_sim+eng'))
+    #开始找消息通知,
     return '123'
 
+def customer():
+    # 输入提示框， 显示带有文本输入以及确定和取消按钮的消息框
+    customer_name = pyautogui.prompt(text='', title='搜索', default='搜索')
+    return customer_name
 
 a = getYzmCode()
 print(a)
