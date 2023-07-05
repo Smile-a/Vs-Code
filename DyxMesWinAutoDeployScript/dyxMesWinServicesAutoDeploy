@@ -1,0 +1,132 @@
+import os
+import ddddocr
+import pyautogui
+import pytesseract
+import datetime as dt
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from time import sleep,time
+from pywinauto.application import Application
+from pywinauto import mouse
+from PIL import Image
+
+
+#要登陆堡垒机的账号和密码
+qwAccount='anwei'
+qwPassword='An123456'
+#企业微信地址
+wxWorkPath = 'C:\Program Files (x86)\WXWork\WXWork.exe'
+title = '企业微信'
+# 设置自动化操作时间间隔
+pyautogui.PAUSE = 0.5
+
+def getYzmCode():
+    #打开企业微信应用
+    app = Application(backend='uia').start(wxWorkPath)
+    #链接到企业微信
+    app = Application(backend='uia').connect(title=title)
+    #选中企业微信窗口
+    wind_calc = app[title]
+    #获取当前窗口显示的坐标
+    coordinate = wind_calc.rectangle()
+    print(coordinate)
+
+    # 程序左边缘距离显示器左边缘的像素
+    l_coordinate = coordinate.left
+    # 程序右边缘距离显示器左边缘的像素
+    r_coordinate = coordinate.right
+    # 程序上边缘距离显示器上边缘的像素
+    t_coordinate = coordinate.top
+    # 程序下边缘距离显示器上边缘的像素
+    b_coordinate = coordinate.bottom
+
+    #选中消息
+    mouse.click(coords=(l_coordinate + 25, b_coordinate - 550))
+    #打开通讯录
+    #mouse.click(coords=(l_coordinate + 25, b_coordinate - 220))
+    #打开文档
+    #mouse.click(coords=(l_coordinate + 25, b_coordinate - 440))
+
+    # 列出支持的语言
+    #print(pytesseract.get_languages(config=''))
+    #获取图片
+    img = Image.open('code.png')
+    #识别图片内文字 #还遇到了问题,原来要用这个还要去下载一个exe;Tesseract-OCR\\tesseract.exe 然后配置系统环境才可以用,然后修改pytesseract.py里面的地址tesseract_cmd=
+    print(pytesseract.image_to_string(img, lang='chi_sim+eng'))
+    #开始找消息通知,
+    return '123'
+
+def customer():
+    # 输入提示框， 显示带有文本输入以及确定和取消按钮的消息框
+    customer_name = pyautogui.prompt(text='', title='搜索', default='搜索')
+    return customer_name
+
+a = getYzmCode()
+print(a)
+
+
+
+# #谷歌浏览器驱动配置
+# options = webdriver.ChromeOptions()
+# #selenium默认是会执行完关闭浏览器的，这样设置一下先不关闭，最后执行手动quit即可。
+# options.add_experimental_option('detach', True)
+# #加载谷歌浏览器驱动
+# chrome = webdriver.Chrome(options=options)
+# #设置浏览器窗口最大化
+# chrome.maximize_window()
+# #登陆dyx
+# chrome.get("https://10.157.234.151/index.php/Public/index/stra_name/sms_local")
+# sleep(3)
+# #这个地址一打开就说不安全，点击高级按钮然后访问真实地址就可以正常登录了
+# gaojiButton = chrome.find_element(By.ID,'details-button')
+# gaojiButton.click()
+# sleep(1)
+# #选择继续访问，点击
+# jixuButton = chrome.find_element(By.ID,'proceed-link')
+# jixuButton.click()
+# sleep(1)
+# #不出意外的话都打开了
+# #输入账号
+# account = chrome.find_element(By.NAME,'account')
+# account.send_keys(qwAccount)
+# sleep(1)
+# #本地密码
+# local = chrome.find_element(By.NAME,'local')
+# local.send_keys(qwPassword)
+# sleep(1)
+# #单击按钮-发送验证码
+# send_mobile_codeButton = chrome.find_element(By.ID,'send_mobile_code')
+# send_mobile_codeButton.click()
+# #这时候会有一个系统弹窗，说发送成功,把它关掉
+# sleep(1)
+# chrome.switch_to.alert.accept()
+# sleep(5)
+# #获取企业微信收到的验证码
+# yzm = getYzmCode()
+# print('获得企微验证码:',yzm)
+# #短信密码填入
+# sms = chrome.find_element(By.NAME,'sms')
+# sms.send_keys(yzm)
+# #调用图像识别，取到图片验证码
+# vcodeImg = chrome.find_element(By.ID,'vcode')
+# # 下载图片
+# vcodeImg.screenshot("code.png")
+# with open("code.png", "rb") as fp:
+#     img = fp.read()
+# #识别图片验证码
+# ocr = ddddocr.DdddOcr()
+# imgYzm = ocr.classification(img)
+# print('识别图片验证码:',imgYzm)
+# #验证码输入框
+# verify = chrome.find_element(By.NAME,'verify')
+# verify.send_keys(imgYzm)
+# sleep(1)
+# #登陆按钮触发
+# submit = chrome.find_element(By.ID,'submit')
+# #submit.click()
+# #验证码也不是百分之百成功，比如O就会认为0，到时候要加一个判定失败了就等等验证码在重新获取一遍
+# print("执行操作，完成后关闭浏览器")
+# #刷新浏览器
+# #chrome.refresh()
+# #关闭浏览器
+# #chrome.quit()
