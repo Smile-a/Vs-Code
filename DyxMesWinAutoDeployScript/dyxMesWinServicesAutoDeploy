@@ -51,7 +51,7 @@ def getYzmCode():
     #print(pytesseract.get_languages(config=''))
     #获取图片
     img = Image.open('code.png')
-    #识别图片内文字
+    #识别图片内文字 #还遇到了问题,原来要用这个还要去下载一个exe;Tesseract-OCR\\tesseract.exe 然后配置系统环境才可以用,然后修改pytesseract.py里面的地址tesseract_cmd=
     print(pytesseract.image_to_string(img, lang='chi_sim+eng'))
     #开始找消息通知,
     return '123'
