@@ -1,3 +1,4 @@
+import sys
 import atomac
 import ddddocr
 import datetime as dt
@@ -103,6 +104,7 @@ def getYzmCode():
 def getVcodeImg(vcodeImg):
     print('img:',vcodeImg)
     vcodeImg.screenshot("code.jpg")  # 下载图片
+    sleep(2)
     with open("code.jpg", "rb") as fp:
         img = fp.read()
     #识别图片验证码
@@ -145,7 +147,7 @@ send_mobile_codeButton.click()
 #这时候会有一个系统弹窗，说发送成功,把它关掉
 sleep(1)
 chrome.switch_to.alert.accept()
-sleep(5)
+sleep(1)
 #获取企业微信收到的验证码
 yzm = getYzmCode()
 print('获得企微验证码:',yzm)
@@ -155,17 +157,29 @@ sms.send_keys(yzm)
 #调用图像识别，取到图片验证码
 vcodeImg = chrome.find_element(By.ID,'vcode')
 imgYzm = getVcodeImg(vcodeImg)
-#最多五下吧，就不信五次还有这样的验证码
+#最多10下吧，就不信10次还有这样的验证码
 i = 1
-while i <= 5:
+while i <= 10:
     #判断验证码有没有o，O，0 这些，目前这个识别会失败，那就直接换一个新的就好了
-    if  'o' in imgYzm:
+    if len(imgYzm) < 4:
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    elif 'o' in imgYzm:
         vcodeImg.click()
         imgYzm = getVcodeImg(vcodeImg)
     elif 'O' in imgYzm:
         vcodeImg.click()
         imgYzm = getVcodeImg(vcodeImg)
     elif '0' in imgYzm :
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    elif '1' in imgYzm :
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    elif '工' in imgYzm :
+        vcodeImg.click()
+        imgYzm = getVcodeImg(vcodeImg)
+    elif '5' in imgYzm :
         vcodeImg.click()
         imgYzm = getVcodeImg(vcodeImg)
     else :
@@ -179,21 +193,43 @@ verify.send_keys(imgYzm)
 submit = chrome.find_element(By.ID,'submit')
 submit.click()
 print("执行操作,不出意外登陆成功!")
+#是否登陆成功
+errBox = chrome.find_element(By.ID,'errBox')
+errBoxSpan = errBox.get_attribute('innerHTML')
+print(errBoxSpan)
+#一般登陆成功就啥也没有，如果登陆失败才会有字，而且账号密码验证码基本都不会有问题，只有可能是验证码也就是"*验证码不正确！"
+if errBoxSpan != '':
+    #以后可以改成重新来一遍登陆流程，现在就先结束
+    #关闭浏览器
+    chrome.quit()
+    #程序结束
+    sys.exit()
 #等一下加载
 sleep(5)
+#刷新浏览器
+chrome.refresh()
+sleep(1)
+#print(chrome.page_source)#打印当前页面源码
+#全局搜索页面
+allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
+chrome.get(allList)
 #获取全局搜索按钮
-liId_all = chrome.find_element(By.ID,'liId_all')
-liId_all.click()
-sleep(5)
+#liId_all = chrome.find_element(By.ID,'liId_all')
+#liId_all = chrome.find_element(By.LINK_TEXT,'全局搜索')
+#liId_all.click()
+#sleep(5)
 #找到设备名称/IP的搜索框
 keyword = chrome.find_element(By.NAME,'keyword')
 #输入要部署的服务器ip
-keyword.send_keys('10.156.13.45')#举例
+keyword.send_keys('10.156.53.58')#举例
 #点击查询
-search = chrome.find_element(By.ID,'search')
+search = chrome.find_element(By.NAME,'search')
 search.click()
+#也许可以emmm我直接好家伙
+devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
+print(devIdUrl)
+chrome.get(devIdUrl)
+#然后点击页面的那个按钮？打开
 sleep(1)
-#刷新浏览器
-#chrome.refresh()
 #关闭浏览器
 #chrome.quit()
