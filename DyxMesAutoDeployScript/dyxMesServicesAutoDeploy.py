@@ -3,7 +3,6 @@ import atomac
 import ddddocr
 import datetime as dt
 import dyxServerConfig
-import requests
 
 from atomac.AXKeyCodeConstants import *
 from selenium import webdriver
@@ -206,42 +205,32 @@ if errBoxSpan != '':
     chrome.quit()
     #程序结束
     sys.exit()
-
-'''写到这里发现了很多奇妙的登陆方式，思来想去，就不往后面做了，因为目前就我自己用，后期在做可以拓展的，加界面的'''
-
 #等一下加载
-sleep(2)
+sleep(5)
 #刷新浏览器
-#chrome.refresh()
-#sleep(1)
+chrome.refresh()
+sleep(1)
 #print(chrome.page_source)#打印当前页面源码
 #全局搜索页面
-#allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
-#chrome.get(allList)
+allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
+chrome.get(allList)
 #获取全局搜索按钮
 #liId_all = chrome.find_element(By.ID,'liId_all')
 #liId_all = chrome.find_element(By.LINK_TEXT,'全局搜索')
 #liId_all.click()
 #sleep(5)
 #找到设备名称/IP的搜索框
-#keyword = chrome.find_element(By.NAME,'keyword')
+keyword = chrome.find_element(By.NAME,'keyword')
 #输入要部署的服务器ip
-#keyword.send_keys('10.156.53.58')#举例
+keyword.send_keys('10.156.53.58')#举例
 #点击查询
-#search = chrome.find_element(By.NAME,'search')
-#search.click()
+search = chrome.find_element(By.NAME,'search')
+search.click()
 #也许可以emmm我直接好家伙
-#devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
-#print(devIdUrl)
-#chrome.get(devIdUrl)
+devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
+print(devIdUrl)
+chrome.get(devIdUrl)
 #然后点击页面的那个按钮？打开
-#sleep(1)
-#print(dyxServerConfig.test_10_156_53_58['term'])
-#print(dyxServerConfig.test_10_156_53_58['winscp'])
-requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['term']+''})
 sleep(1)
-requests.post('http://127.0.0.1:8888/RunWinScp',{'data':''+dyxServerConfig.test_10_156_53_58['winscp']+''})
-sleep(1)
-requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['winscp']+''})
 #关闭浏览器
 #chrome.quit()
