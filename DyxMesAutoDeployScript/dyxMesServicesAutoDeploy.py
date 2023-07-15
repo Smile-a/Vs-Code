@@ -3,6 +3,7 @@ import atomac
 import ddddocr
 import datetime as dt
 import dyxServerConfig
+import requests
 
 from atomac.AXKeyCodeConstants import *
 from selenium import webdriver
@@ -231,6 +232,10 @@ devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id
 print(devIdUrl)
 chrome.get(devIdUrl)
 #然后点击页面的那个按钮？打开
+sleep(1)
+requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['term']+''})
+sleep(1)
+#requests.post('http://127.0.0.1:8888/RunWinScp',{'data':''+dyxServerConfig.test_10_156_53_58['winscp']+''})
 sleep(1)
 #关闭浏览器
 #chrome.quit()

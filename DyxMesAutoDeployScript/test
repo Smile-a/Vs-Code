@@ -1,0 +1,28 @@
+import sys
+import atomac
+from atomac.AXKeyCodeConstants import *
+
+
+atomac.launchAppByBundleId("com.apple.Terminal")
+#获取应用信息
+ato = atomac.getAppRefByBundleId("com.apple.Terminal")
+#获取当前应用windows
+cur_win = ato.windows()[0]
+#窗口标题
+print("窗口标题:",cur_win.AXTitle)
+# 获取输入框
+input_area = cur_win.findFirstR(AXRole="AXTextArea")
+print(input_area.getAttributes())
+input_area_position = input_area.AXPosition
+input_area_size = input_area.AXSize
+# 点击输入框并输入文字
+input_area.clickMouseButtonLeft(input_area_position)
+input_area.sendKeys('ls \n')
+input_area.sendKeys('pwd \n')
+print(input_area.AXValue)
+input_area.sendKeys('clear \n')
+input_area.sendKeys('ps \n')
+print("最新txt:",input_area.AXValue)
+#关闭窗口
+#closeBtn = cur_win.AXCloseButton
+#closeBtn.Press()
