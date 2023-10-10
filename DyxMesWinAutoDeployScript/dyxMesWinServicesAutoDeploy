@@ -23,6 +23,7 @@ pyautogui.PAUSE = 0.5
 def getYzmCode():
     #打开企业微信应用
     app = Application(backend='uia').start(wxWorkPath)
+    sleep(2)
     #链接到企业微信
     app = Application(backend='uia').connect(title=title)
     #选中企业微信窗口
@@ -60,7 +61,9 @@ def customer():
     # 输入提示框， 显示带有文本输入以及确定和取消按钮的消息框
     customer_name = pyautogui.prompt(text='', title='搜索', default='搜索')
     return customer_name
-
+# 先把路径切进来
+print(os.getcwd())
+os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
 a = getYzmCode()
 print(a)
 
