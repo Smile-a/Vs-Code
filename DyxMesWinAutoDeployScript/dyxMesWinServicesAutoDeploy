@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from time import sleep,time
 from pywinauto.application import Application
 from pywinauto import mouse
+from pyautogui import scroll
 from PIL import Image
 
 
@@ -47,7 +48,36 @@ def getYzmCode():
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 220))
     #打开文档
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 440))
-
+    
+    #当前鼠标在消息图标上，挪动到消息通知上面，暂时简单做法就是制定消息通知，让鼠标点过去，高级点就先点搜索框就有点麻烦了
+    x,y = pyautogui.position()
+    mouse.double_click(coords=(x + 73, y + 28))
+    print("鼠标当前位置:",pyautogui.position())
+    #滚轮上滑
+    scroll(20)
+    #选中企业微信窗口
+    wind_msg = app['消息通知']
+    #获取当前窗口显示的坐标
+    print('消息通知窗口位置:',wind_msg.rectangle())
+    wind_msg_left = wind_msg.rectangle().left
+    wind_msg_top = wind_msg.rectangle().top
+    wind_msg_right = wind_msg.rectangle().right
+    wind_msg_bottom = wind_msg.rectangle().bottom
+    #获取消息通知的结构
+    #print(wind_msg.print_control_identifiers())
+    # 本来准备获取窗体内容的 也确实这么做了，奈何太菜了 只能换个路子了,截图或者定位  以后再看看能不能获取窗体在试试
+    # 直接截图 这时候是双击的消息通知窗口直接通过消息通知定位
+     # 屏幕的宽度和高度
+    width, height = pyautogui.size()
+    print("当前屏幕尺寸:",width, height)
+    #pyautogui.alert(text='寻找定位中...', title='提示', button='OK')
+    # 不这样傻傻移动可以用截图匹配 也可以
+    # 移动鼠标到窗口聊天框中心 然后下滑动不滑也不是不行
+    mouse.double_click(coords=(wind_msg_left + 500, wind_msg_top + 100))
+    scroll(-10)
+    #截图 太妙了 他的聊天记录log刚好对应验证码!!
+    
+    
     # 列出支持的语言
     #print(pytesseract.get_languages(config=''))
     #获取图片
@@ -61,12 +91,23 @@ def customer():
     # 输入提示框， 显示带有文本输入以及确定和取消按钮的消息框
     customer_name = pyautogui.prompt(text='', title='搜索', default='搜索')
     return customer_name
-# 先把路径切进来
-print(os.getcwd())
-os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
-a = getYzmCode()
-print(a)
 
+#持续获取当前鼠标坐标
+def getPoint():
+    for i in range(20):
+        print("鼠标当前位置:",pyautogui.position())
+        sleep(0.5)
+
+# 先把路径切进来
+print("我要开始自动化了~")
+os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
+print("当前路径",os.getcwd())
+print("鼠标当前位置:",pyautogui.position())
+qwyzm = getYzmCode()
+print("企微验证码:",qwyzm)
+print("鼠标当前位置:",pyautogui.position())
+print("自动化结束了~")
+#getPoint()
 
 
 # #谷歌浏览器驱动配置
