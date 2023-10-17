@@ -56,13 +56,16 @@ def getYzmCode():
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 220))
     #打开文档
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 440))
-    
+    sleep(1)
     #当前鼠标在消息图标上，挪动到消息通知上面，暂时简单做法就是制定消息通知，让鼠标点过去，高级点就先点搜索框就有点麻烦了
     x,y = pyautogui.position()
     mouse.double_click(coords=(x + 73, y + 28))
     print("鼠标当前位置:",pyautogui.position())
+    sleep(1)
     #滚轮上滑
-    scroll(20)
+    scroll(100)
+    #偶然发现了 要等一会
+    sleep(1)
     #选中企业微信窗口
     wind_msg = app['消息通知']
     #获取当前窗口显示的坐标
@@ -140,7 +143,7 @@ def getVcodeImg(vcodeImg):
 
 
 # 先把路径切进来
-print("我要开始自动化了~")
+print("我要开始浏览器登录自动化了~")
 print("当前路径",os.getcwd())
 os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
 print("切换路径，当前路径",os.getcwd())
@@ -250,19 +253,27 @@ if errBoxSpan != '':
 #等一下加载
 sleep(5)
 #刷新浏览器
-chrome.refresh()
+#chrome.refresh()
 #全局搜索页面
-allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
-chrome.get(allList)
+#allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
+#chrome.get(allList)
 #emmmmm
-sleep(2)
-devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
-chrome.get(devIdUrl)
+#sleep(2)
+#devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
+#chrome.get(devIdUrl)
+###########最简单粗暴的方式来了，登录成功就不用管了
 #然后点击页面的那个按钮？打开
 sleep(1)
-#requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''})
+print("打开Xshell")
+#requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''},timeout=3.0)
 sleep(1)
-requests.post('http://127.0.0.1:8888/RunWinScp',{'data':''+dyxServerConfig.test_10_156_53_58['winscp']+''})
+print("打开Winscp")
+#构造请求winscp的参数
+winscp_form_data = requests.structures.CaseInsensitiveDict()  
+winscp_form_data.update({'data': ''+dyxServerConfig.test_10_156_53_58['winscp']+''})  
+winscp_form_data.update({'username': ''})  
+winscp_form_data.update({'password': ''})
+requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
 #关闭浏览器
 #chrome.quit()
 print("自动化结束了~")
