@@ -43,7 +43,7 @@ def getYzmCode():
     wind_calc = app[title]
     sleep(1)
     #获取这个窗口的焦点？
-    
+    wind_calc.set_focus()
     #获取当前窗口显示的坐标
     coordinate = wind_calc.rectangle()
     print(coordinate)

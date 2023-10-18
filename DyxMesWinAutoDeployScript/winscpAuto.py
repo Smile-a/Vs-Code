@@ -59,6 +59,7 @@ def main():
     pyautogui.hotkey('enter')
     #最好先去判断一下文件是否存在
     upFile = dyxServerConfig.frontendPath + dyxServerConfig.frontendZipName
+    print("上传文件路径:",upFile)
     if(os.path.exists(upFile)):
         print("文件存在")
     else:
