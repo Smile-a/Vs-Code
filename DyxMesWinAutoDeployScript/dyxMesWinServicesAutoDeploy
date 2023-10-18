@@ -66,8 +66,9 @@ def getYzmCode():
     #mouse.double_click(coords=(x + 73, y + 28))
     #先移动
     pyautogui.moveTo((x + 73), (y + 28))
-    #然后滚轮上滑
-    scroll(100)
+    for i in range(10):
+        #然后滚轮上滑,不是很理解为啥直接10000就那么一点，所以循环弄下算了
+        scroll(10000)
     print("鼠标当前位置:",pyautogui.position())
     #这样基本可以确保鼠标在消息通知log上了,双击打开
     pyautogui.doubleClick()
@@ -92,6 +93,7 @@ def getYzmCode():
     # 不这样傻傻移动可以用截图匹配 也可以
     # 移动鼠标到窗口聊天框中心 然后下滑动不滑也不是不行
     mouse.double_click(coords=(wind_msg_left + 500, wind_msg_top + 100))
+    #这里是从聊天logo向上移动，你要是屏幕像素高自己看着调整就行
     scroll(-10)
     #截图 太妙了 他的聊天记录log刚好对应验证码!!
     qwGpslogo = pyautogui.locateOnScreen('qwGpslogo.png')
@@ -268,15 +270,10 @@ sleep(5)
 #全局搜索页面
 allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
 chrome.get(allList)
-#emmmmm
 sleep(1)
-#devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
-#chrome.get(devIdUrl)
-
-for i in range(6):
+#更新登录密钥
+for i in range(3):
     configTitleName = ""
-    with open('dyxmesServiceJSON.json', 'r') as file:  
-            jsonData = json.load(file)
     if(i==0):
         print("前台页面")
         configTitleName = "test_10_156_53_58"
@@ -288,22 +285,7 @@ for i in range(6):
         devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
         chrome.get(devIdUrl)
     elif(i==2):
-        print("plan模块")
-        configTitleName = "test_10_156_53_59"
-        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
-        chrome.get(devIdUrl)
-    elif(i==3):
         print("quality模块")
-        configTitleName = "test_10_156_53_60"
-        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
-        chrome.get(devIdUrl)
-    elif(i==4):
-        print("base模块")
-        configTitleName = "test_10_156_53_60"
-        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
-        chrome.get(devIdUrl)
-    elif(i==5):
-        print("warehouse模块")
         configTitleName = "test_10_156_53_60"
         devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
         chrome.get(devIdUrl)
@@ -328,7 +310,7 @@ for i in range(6):
     
     #把取到的值写入到config里面
     if(configTitleName == ''):
-        print("啊？")
+        print("更新密钥发生了点问题，程序退出!")
         sys.exit()
     else:
         # 读取文件内容  
@@ -343,15 +325,20 @@ for i in range(6):
 ###########最简单粗暴的方式来了，登录成功就不用管了
 sleep(1)
 print("打开Winscp")
+# 读取文件内容  
+with open('dyxmesServiceJSON.json', 'r') as file:  
+    jsonFileData = json.load(file)
 #构造请求winscp的参数
 winscp_form_data = requests.structures.CaseInsensitiveDict()  
-winscp_form_data.update({'data': ''+dyxServerConfig.test_10_156_53_58['winscp']+''})  
-winscp_form_data.update({'username': ''})  
+winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_58']['winscp']+''})
+winscp_form_data.update({'username': ''})
 winscp_form_data.update({'password': ''})
+#故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
 requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
-#然后点击页面的那个按钮？打开
 sleep(1)
-print("打开Xshell")
+#调用winscp脚本开始上传文件了~
+
+#文件都上传成功了，切换xshell开始走指令启动程序了~
 #requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''},timeout=3.0)
 #关闭浏览器
 #chrome.quit()
