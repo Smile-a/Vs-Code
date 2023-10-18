@@ -152,7 +152,56 @@ def getVcodeImg(vcodeImg):
 #后来才发现，原来每天那个配置文件里面的登录参数是会变，对比了一下，感觉应该是时间戳加密那些玩意，但是无所谓
 def getHtmlValue():
     #每次登录前获取一次，然后更新配置文件里面保存的就ok了
-    print()
+    for i in range(3):
+        configTitleName = ""
+        if(i==0):
+            print("10_156_53_58服务器")
+            configTitleName = "test_10_156_53_58"
+            devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
+            chrome.get(devIdUrl)
+        elif(i==1):
+            print("10_156_53_59服务器")
+            configTitleName = "test_10_156_53_59"
+            devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
+            chrome.get(devIdUrl)
+        elif(i==2):
+            print("10_156_53_60服务器")
+            configTitleName = "test_10_156_53_60"
+            devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
+            chrome.get(devIdUrl)
+        #print(chrome.page_source)#打印当前页面源码
+        # 定位到shell表单元素
+        shell_form = chrome.find_element(By.ID,"shell_1")
+        # 定位到输入框元素  
+        shell_form_input = shell_form.find_element(By.NAME,"data")  
+        # 获取输入框的值  
+        shell_value = shell_form_input.get_attribute("value")  
+        # 打印输入框的值  
+        print(shell_value)
+        
+        # 定位到winscp表单元素  
+        ssh_form = chrome.find_element(By.ID,"SSH")  
+        # 定位到输入框元素  
+        ssh_form_input = ssh_form.find_element(By.NAME,"data")  
+        # 获取输入框的值  
+        ssh_value = ssh_form_input.get_attribute("value")  
+        # 打印输入框的值  
+        print(ssh_value)
+        
+        #把取到的值写入到config里面
+        if(configTitleName == ''):
+            print("更新密钥发生了点问题，程序退出!")
+            sys.exit()
+        else:
+            # 读取文件内容  
+            with open('dyxmesServiceJSON.json', 'r') as file:  
+                config_data = json.load(file)
+            # 更改xhell的值
+            config_data[''+configTitleName+'']['Xshell'] = ''+shell_value+''
+            config_data[''+configTitleName+'']['winscp'] = ''+ssh_value+''
+            # 将更新后的内容写回到文件  
+            with open('dyxmesServiceJSON.json', 'w') as file:  
+                json.dump(config_data, file, indent=4)
 
 
 # 先把路径切进来
@@ -173,7 +222,7 @@ chrome = webdriver.Chrome(options=options)
 chrome.maximize_window()
 #登陆dyx
 chrome.get("https://10.157.234.151/index.php/Public/index/stra_name/sms_local")
-#sleep(3)
+#弹窗等待一下
 alterAuto(3000)
 #这个地址一打开就说不安全，点击高级按钮然后访问真实地址就可以正常登录了
 gaojiButton = chrome.find_element(By.ID,'details-button')
@@ -199,11 +248,12 @@ send_mobile_codeButton.click()
 sleep(1)
 chrome.switch_to.alert.accept()
 #怕有时候网络不行，所以才等一会
-#sleep(5)
+#弹窗等待一下.有的时候验证码没有那么及时~
 alterAuto(5000)
 #获取企业微信收到的验证码
 yzm = getYzmCode()
 print('获得企微验证码:',yzm)
+
 #短信密码填入
 sms = chrome.find_element(By.NAME,'sms')
 sms.send_keys(yzm)
@@ -211,8 +261,7 @@ sms.send_keys(yzm)
 vcodeImg = chrome.find_element(By.ID,'vcode')
 imgYzm = getVcodeImg(vcodeImg)
 #最多10下吧，就不信10次还有这样的验证码
-i = 1
-while i <= 10:
+for i in range(10):
     #判断验证码有没有o，O，0 这些，目前这个识别会失败，那就直接换一个新的就好了
     if len(imgYzm) < 4:
         vcodeImg.click()
@@ -238,7 +287,6 @@ while i <= 10:
     else :
         print(imgYzm)
         break
-    i += 1
 #验证码输入框
 verify = chrome.find_element(By.NAME,'verify')
 verify.send_keys(imgYzm)
@@ -271,57 +319,8 @@ sleep(5)
 allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
 chrome.get(allList)
 sleep(1)
-#更新登录密钥
-for i in range(3):
-    configTitleName = ""
-    if(i==0):
-        print("前台页面")
-        configTitleName = "test_10_156_53_58"
-        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
-        chrome.get(devIdUrl)
-    elif(i==1):
-        print("system模块")
-        configTitleName = "test_10_156_53_59"
-        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
-        chrome.get(devIdUrl)
-    elif(i==2):
-        print("quality模块")
-        configTitleName = "test_10_156_53_60"
-        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
-        chrome.get(devIdUrl)
-    #print(chrome.page_source)#打印当前页面源码
-    # 定位到shell表单元素
-    shell_form = chrome.find_element(By.ID,"shell_1")
-    # 定位到输入框元素  
-    shell_form_input = shell_form.find_element(By.NAME,"data")  
-    # 获取输入框的值  
-    shell_value = shell_form_input.get_attribute("value")  
-    # 打印输入框的值  
-    print(shell_value)
-    
-    # 定位到winscp表单元素  
-    ssh_form = chrome.find_element(By.ID,"SSH")  
-    # 定位到输入框元素  
-    ssh_form_input = ssh_form.find_element(By.NAME,"data")  
-    # 获取输入框的值  
-    ssh_value = ssh_form_input.get_attribute("value")  
-    # 打印输入框的值  
-    print(ssh_value)
-    
-    #把取到的值写入到config里面
-    if(configTitleName == ''):
-        print("更新密钥发生了点问题，程序退出!")
-        sys.exit()
-    else:
-        # 读取文件内容  
-        with open('dyxmesServiceJSON.json', 'r') as file:  
-            config_data = json.load(file)
-        # 更改xhell的值
-        config_data[''+configTitleName+'']['Xshell'] = ''+shell_value+''
-        config_data[''+configTitleName+'']['winscp'] = ''+ssh_value+''
-        # 将更新后的内容写回到文件  
-        with open('dyxmesServiceJSON.json', 'w') as file:  
-            json.dump(config_data, file, indent=4)
+#更新登录密钥--目前写的是直接把测试的三台服务器都更新了，以后有需要或者别的自己加就行
+getHtmlValue()
 ###########最简单粗暴的方式来了，登录成功就不用管了
 sleep(1)
 print("打开Winscp")
@@ -330,7 +329,7 @@ with open('dyxmesServiceJSON.json', 'r') as file:
     jsonFileData = json.load(file)
 #构造请求winscp的参数
 winscp_form_data = requests.structures.CaseInsensitiveDict()  
-winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_58']['winscp']+''})
+winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_60']['winscp']+''})
 winscp_form_data.update({'username': ''})
 winscp_form_data.update({'password': ''})
 #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
