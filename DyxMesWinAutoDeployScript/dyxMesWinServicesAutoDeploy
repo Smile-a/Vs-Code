@@ -9,6 +9,7 @@ import pyperclip
 import tkinter as tk
 import requests
 import dyxServerConfig
+import winscpAuto
 
 from tkinter import messagebox
 from selenium import webdriver
@@ -31,13 +32,18 @@ pyautogui.PAUSE = 0.5
 
 #获取企业微信消息通知里面的最新的登录验证码
 def getYzmCode():
+    sleep(2)
     #打开企业微信应用
     app = Application(backend='uia').start(wxWorkPath)
-    sleep(2)
+    sleep(1)
     #链接到企业微信
     app = Application(backend='uia').connect(title=title)
+    sleep(1)
     #选中企业微信窗口
     wind_calc = app[title]
+    sleep(1)
+    #获取这个窗口的焦点？
+    
     #获取当前窗口显示的坐标
     coordinate = wind_calc.rectangle()
     print(coordinate)
@@ -152,24 +158,21 @@ def getVcodeImg(vcodeImg):
 #后来才发现，原来每天那个配置文件里面的登录参数是会变，对比了一下，感觉应该是时间戳加密那些玩意，但是无所谓
 def getHtmlValue():
     #每次登录前获取一次，然后更新配置文件里面保存的就ok了
-    for i in range(3):
-        configTitleName = ""
-        if(i==0):
-            print("10_156_53_58服务器")
-            configTitleName = "test_10_156_53_58"
-            devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
-            chrome.get(devIdUrl)
-        elif(i==1):
-            print("10_156_53_59服务器")
-            configTitleName = "test_10_156_53_59"
-            devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
-            chrome.get(devIdUrl)
-        elif(i==2):
-            print("10_156_53_60服务器")
-            configTitleName = "test_10_156_53_60"
-            devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
-            chrome.get(devIdUrl)
-        #print(chrome.page_source)#打印当前页面源码
+    # 读取文件内容  
+    with open('dyxmesServiceJSON.json', 'r') as file:  
+        config_data = json.load(file)
+        node_count = len(config_data)  # 计算节点元素数量  
+        print("JSON文件中节点元素数量为:", node_count)
+    for i in range(node_count):
+        server_name = list(config_data.keys())[i]  # 获取当前节点的服务器名称  
+        jsonStr = config_data[server_name]  # 获取对应的json数据
+        configTitleName = jsonStr['configTitleName']
+        configTitleId = jsonStr['id']
+        print("服务器:",configTitleName)
+        print("dev_id:",configTitleId)
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + configTitleId
+        chrome.get(devIdUrl)
+        
         # 定位到shell表单元素
         shell_form = chrome.find_element(By.ID,"shell_1")
         # 定位到输入框元素  
@@ -177,7 +180,7 @@ def getHtmlValue():
         # 获取输入框的值  
         shell_value = shell_form_input.get_attribute("value")  
         # 打印输入框的值  
-        print(shell_value)
+        #print(shell_value)
         
         # 定位到winscp表单元素  
         ssh_form = chrome.find_element(By.ID,"SSH")  
@@ -186,22 +189,22 @@ def getHtmlValue():
         # 获取输入框的值  
         ssh_value = ssh_form_input.get_attribute("value")  
         # 打印输入框的值  
-        print(ssh_value)
+        #print(ssh_value)
         
         #把取到的值写入到config里面
         if(configTitleName == ''):
             print("更新密钥发生了点问题，程序退出!")
             sys.exit()
         else:
-            # 读取文件内容  
-            with open('dyxmesServiceJSON.json', 'r') as file:  
-                config_data = json.load(file)
             # 更改xhell的值
             config_data[''+configTitleName+'']['Xshell'] = ''+shell_value+''
             config_data[''+configTitleName+'']['winscp'] = ''+ssh_value+''
             # 将更新后的内容写回到文件  
             with open('dyxmesServiceJSON.json', 'w') as file:  
                 json.dump(config_data, file, indent=4)
+
+
+
 
 
 # 先把路径切进来
@@ -321,24 +324,34 @@ chrome.get(allList)
 sleep(1)
 #更新登录密钥--目前写的是直接把测试的三台服务器都更新了，以后有需要或者别的自己加就行
 getHtmlValue()
-###########最简单粗暴的方式来了，登录成功就不用管了
+#然后我在切回去~装作无事发生
+chrome.get(allList)
 sleep(1)
-print("打开Winscp")
+print("准备打开Winscp")
 # 读取文件内容  
 with open('dyxmesServiceJSON.json', 'r') as file:  
     jsonFileData = json.load(file)
 #构造请求winscp的参数
-winscp_form_data = requests.structures.CaseInsensitiveDict()  
-winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_60']['winscp']+''})
+winscp_form_data = requests.structures.CaseInsensitiveDict()
+winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_58']['winscp']+''})
 winscp_form_data.update({'username': ''})
 winscp_form_data.update({'password': ''})
-#故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
-requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
+try:  
+    #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+    requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
+except requests.exceptions.RequestException as e:  
+    # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+    print(f'winscp捕获到值错误: {e}')
 sleep(1)
 #调用winscp脚本开始上传文件了~
-
+winscpAuto.main()
 #文件都上传成功了，切换xshell开始走指令启动程序了~
-#requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''},timeout=3.0)
+try:  
+    #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+    requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''},timeout=3.0)
+except requests.exceptions.RequestException as e:  
+    # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+    print(f'xshell捕获到值错误: {e}')
 #关闭浏览器
 #chrome.quit()
 print("自动化结束了~")
