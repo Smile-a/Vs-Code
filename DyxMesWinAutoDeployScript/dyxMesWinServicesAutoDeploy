@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import ddddocr
 import pyautogui
 import pytesseract
@@ -51,19 +52,25 @@ def getYzmCode():
     b_coordinate = coordinate.bottom
 
     #选中消息
-    mouse.click(coords=(l_coordinate + 25, b_coordinate - 550))
+    #mouse.click(coords=(l_coordinate + 25, b_coordinate - 550))
+    #偶然发现的，如果直接单击会有问题，你要是来了一条消息，你单机，他就是第一条，置顶的消息通知都会被顶走
+    pyautogui.moveTo((l_coordinate + 25), (b_coordinate - 550))
     #打开通讯录
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 220))
     #打开文档
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 440))
-    sleep(1)
+    #sleep(1)
     #当前鼠标在消息图标上，挪动到消息通知上面，暂时简单做法就是制定消息通知，让鼠标点过去，高级点就先点搜索框就有点麻烦了
     x,y = pyautogui.position()
-    mouse.double_click(coords=(x + 73, y + 28))
-    print("鼠标当前位置:",pyautogui.position())
-    sleep(1)
-    #滚轮上滑
+    #挪动到消息通知聊天栏然后双击打开
+    #mouse.double_click(coords=(x + 73, y + 28))
+    #先移动
+    pyautogui.moveTo((x + 73), (y + 28))
+    #然后滚轮上滑
     scroll(100)
+    print("鼠标当前位置:",pyautogui.position())
+    #这样基本可以确保鼠标在消息通知log上了,双击打开
+    pyautogui.doubleClick()
     #偶然发现了 要等一会
     sleep(1)
     #选中企业微信窗口
@@ -140,6 +147,10 @@ def getVcodeImg(vcodeImg):
     print('识别图片验证码:',imgYzm)
     return imgYzm
 
+#后来才发现，原来每天那个配置文件里面的登录参数是会变，对比了一下，感觉应该是时间戳加密那些玩意，但是无所谓
+def getHtmlValue():
+    #每次登录前获取一次，然后更新配置文件里面保存的就ok了
+    print()
 
 
 # 先把路径切进来
@@ -255,17 +266,81 @@ sleep(5)
 #刷新浏览器
 #chrome.refresh()
 #全局搜索页面
-#allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
-#chrome.get(allList)
+allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
+chrome.get(allList)
 #emmmmm
-#sleep(2)
+sleep(1)
 #devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
 #chrome.get(devIdUrl)
+
+for i in range(6):
+    configTitleName = ""
+    with open('dyxmesServiceJSON.json', 'r') as file:  
+            jsonData = json.load(file)
+    if(i==0):
+        print("前台页面")
+        configTitleName = "test_10_156_53_58"
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '763'
+        chrome.get(devIdUrl)
+    elif(i==1):
+        print("system模块")
+        configTitleName = "test_10_156_53_59"
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
+        chrome.get(devIdUrl)
+    elif(i==2):
+        print("plan模块")
+        configTitleName = "test_10_156_53_59"
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '764'
+        chrome.get(devIdUrl)
+    elif(i==3):
+        print("quality模块")
+        configTitleName = "test_10_156_53_60"
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
+        chrome.get(devIdUrl)
+    elif(i==4):
+        print("base模块")
+        configTitleName = "test_10_156_53_60"
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
+        chrome.get(devIdUrl)
+    elif(i==5):
+        print("warehouse模块")
+        configTitleName = "test_10_156_53_60"
+        devIdUrl = 'https://10.157.234.151/index.php/UserWork/operation/dgrp_id/0/dev_id/' + '765'
+        chrome.get(devIdUrl)
+    #print(chrome.page_source)#打印当前页面源码
+    # 定位到shell表单元素
+    shell_form = chrome.find_element(By.ID,"shell_1")
+    # 定位到输入框元素  
+    shell_form_input = shell_form.find_element(By.NAME,"data")  
+    # 获取输入框的值  
+    shell_value = shell_form_input.get_attribute("value")  
+    # 打印输入框的值  
+    print(shell_value)
+    
+    # 定位到winscp表单元素  
+    ssh_form = chrome.find_element(By.ID,"SSH")  
+    # 定位到输入框元素  
+    ssh_form_input = ssh_form.find_element(By.NAME,"data")  
+    # 获取输入框的值  
+    ssh_value = ssh_form_input.get_attribute("value")  
+    # 打印输入框的值  
+    print(ssh_value)
+    
+    #把取到的值写入到config里面
+    if(configTitleName == ''):
+        print("啊？")
+        sys.exit()
+    else:
+        # 读取文件内容  
+        with open('dyxmesServiceJSON.json', 'r') as file:  
+            config_data = json.load(file)
+        # 更改xhell的值
+        config_data[''+configTitleName+'']['Xshell'] = ''+shell_value+''
+        config_data[''+configTitleName+'']['winscp'] = ''+ssh_value+''
+        # 将更新后的内容写回到文件  
+        with open('dyxmesServiceJSON.json', 'w') as file:  
+            json.dump(config_data, file, indent=4)
 ###########最简单粗暴的方式来了，登录成功就不用管了
-#然后点击页面的那个按钮？打开
-sleep(1)
-print("打开Xshell")
-#requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''},timeout=3.0)
 sleep(1)
 print("打开Winscp")
 #构造请求winscp的参数
@@ -274,6 +349,10 @@ winscp_form_data.update({'data': ''+dyxServerConfig.test_10_156_53_58['winscp']+
 winscp_form_data.update({'username': ''})  
 winscp_form_data.update({'password': ''})
 requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
+#然后点击页面的那个按钮？打开
+sleep(1)
+print("打开Xshell")
+#requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+dyxServerConfig.test_10_156_53_58['Xshell']+''},timeout=3.0)
 #关闭浏览器
 #chrome.quit()
 print("自动化结束了~")
