@@ -105,9 +105,9 @@ def getYzmCode():
 #获取登陆页面的验证码,可以单击更换
 def getVcodeImg(vcodeImg):
     print('img:',vcodeImg)
-    vcodeImg.screenshot("code.jpg")  # 下载图片
+    vcodeImg.screenshot("code.png")  # 下载图片
     sleep(2)
-    with open("code.jpg", "rb") as fp:
+    with open("code.png", "rb") as fp:
         img = fp.read()
     #识别图片验证码
     ocr = ddddocr.DdddOcr(show_ad=False)
