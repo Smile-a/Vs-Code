@@ -69,6 +69,8 @@ def main():
         fileNullErrTk.after(3000, fileNullErrTk.destroy)
         messagebox.showerror("错误", "打包上传文件不存在，请检查!")
         sys.exit()
+    #获取焦点
+    window.set_focus()
     #选择文件
     pyautogui.hotkey('alt','m')
     pyautogui.hotkey('down')
