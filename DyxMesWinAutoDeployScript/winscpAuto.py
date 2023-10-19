@@ -83,9 +83,11 @@ def main():
     pyautogui.hotkey('f5')
     #最后一个发送enter
     pyautogui.hotkey('enter')
-    sleep(60)
+    
+    #最新的问题，我好像没有办法在这个窗口等待他是不是上传完毕了，有一个进度条但是我无法获取到~
+    #sleep(60)
     #上传成功后关闭窗口 用window.close()会有问题，很怪
-    pyautogui.hotkey('alt', 'f4')
+    #pyautogui.hotkey('alt', 'f4')
     #确认关闭 你要是打勾了应该没问题了
-    pyautogui.hotkey('enter')
+    #pyautogui.hotkey('enter')
     print("winscp自动化结束")

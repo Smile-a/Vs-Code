@@ -2,6 +2,8 @@
 loginUserName = "anwei"
 #winscp软件窗口标题
 winsctTitle = "@10.157.234.151 – WinSCP"
+#Xshell软件窗口标题
+xshellTitle = '10.156.53.58 - root@kjymessjzjjtest:~ - Xshell 6'
 #前台页面打包好的存放路径
 frontendPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\build\\"
 #前台打包好的zip
