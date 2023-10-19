@@ -328,9 +328,15 @@ getHtmlValue()
 #然后我在切回去~装作无事发生
 chrome.get(allList)
 sleep(1)
+
+#是不是这里可以加一个打包的方法 把前台后台打包好
+# os.chdir("C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\build")
+# buildBat_path = r'C:\Users\wsd\eclipse-workspace\dyxmesProject\hbtobacco-dyxmes-frontend\build\build.bat'
+# os.system(buildBat_path)
+
 print("准备打开Winscp")
 # 读取文件内容  
-with open('dyxmesServiceJSON.json', 'r') as file:  
+with open('dyxmesServiceJSON.json', 'r') as file:
     jsonFileData = json.load(file)
 #构造请求winscp的参数
 winscp_form_data = requests.structures.CaseInsensitiveDict()
@@ -338,6 +344,7 @@ winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_58']['winscp']+
 winscp_form_data.update({'username': ''})
 winscp_form_data.update({'password': ''})
 try:  
+    sleep(2)
     #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
     requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
 except requests.exceptions.RequestException as e:  
@@ -347,6 +354,7 @@ sleep(1)
 #调用winscp脚本开始上传文件了~
 winscpAuto.main()
 #文件都上传成功了，切换xshell开始走指令启动程序了~
+sleep(5)
 try:  
     #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
     requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData['test_10_156_53_58']['Xshell']+''},timeout=3.0)

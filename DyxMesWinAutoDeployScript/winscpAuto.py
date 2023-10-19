@@ -80,7 +80,8 @@ def main():
     sleep(1)
     pyautogui.hotkey('ctrl', 'v')
     pyautogui.hotkey('enter')
-    pyautogui.hotkey('f5')
+    #f5上传，f6上传并且删除
+    pyautogui.hotkey('f6')
     #最后一个发送enter
     pyautogui.hotkey('enter')
     
