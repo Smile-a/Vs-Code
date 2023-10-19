@@ -86,9 +86,22 @@ def main():
     pyautogui.hotkey('enter')
     
     #最新的问题，我好像没有办法在这个窗口等待他是不是上传完毕了，有一个进度条但是我无法获取到~
-    #sleep(60)
-    #上传成功后关闭窗口 用window.close()会有问题，很怪
-    #pyautogui.hotkey('alt', 'f4')
-    #确认关闭 你要是打勾了应该没问题了
-    #pyautogui.hotkey('enter')
-    print("winscp自动化结束")
+    sleep(5)
+    #但是可以曲线救国，走到这里确定了文件存在，进度条在上传了对吧，我执行的是上传成功后删除文件，那？
+    for n in range(100):
+        #我直接堵塞住你，不往下走，就给我读那个文件，你只要不存在了 那不就是删除成功了吗
+        sleep(6)
+        #最多给你十分钟时间，还没成功那。。。。。。。
+        if(os.path.exists(upFile)):
+            print("文件存在,上传还未完成，请等待！")
+        else:
+            print("文件不存在了，上传成功了！!!")
+            #上传成功后关闭窗口 用window.close()会有问题，很怪
+            pyautogui.hotkey('alt', 'f4')
+            #确认关闭 你要是打勾了应该没问题了
+            pyautogui.hotkey('enter')
+            print("winscp自动化结束")
+            #结束？break? sys.exit()?
+            return True
+    #你要是还能到这说明？10分钟了还没上传成功？你认真的？
+    #emmmm

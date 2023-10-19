@@ -51,16 +51,16 @@ def main():
     window.set_focus()
     #强迫症
     pyautogui.typewrite('ll',0.5)
-    #很关键，每次输入了字之后shift一下 避免回车变成中文，懒得写强制修改输入法中午的方法了
+    #很关键，每次输入了字之后shift一下 避免回车变成中文，懒得写强制修改输入法中文的方法了
     pyautogui.hotkey('shift')
     pyautogui.hotkey('enter')
     #自己加的脚本--这样自动化前面出了问题的化，这个脚本问题不大
-    pyautogui.typewrite('nohup sh deploy-frontend-Auto.sh > /dev/null 2>&1 &',0.2)
+    #pyautogui.typewrite('nohup sh deploy-frontend-Auto.sh > /dev/null 2>&1 &',0.2) #这个直接关闭窗口都行
+    pyautogui.typewrite('sh deploy-frontend-Auto.sh',0.2) #这个就要硬等xshell的窗口命令跑完才可以奥
     pyautogui.hotkey('shift')
     pyautogui.hotkey('enter')
-    
-    #等脚本慢慢跑就行了
-    sleep(30)
+    #等脚本慢慢跑就行了,前台包，15s应该解压无压力吧~  后台jar包还是直接后台跑就行了其余不管
+    sleep(15)
     #自带的close居然会有异常?
     pyautogui.hotkey('alt','f4')
     #确认关闭

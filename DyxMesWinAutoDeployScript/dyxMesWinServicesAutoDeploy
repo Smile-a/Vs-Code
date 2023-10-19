@@ -352,17 +352,29 @@ except requests.exceptions.RequestException as e:
     print(f'winscp捕获到值错误: {e}')
 sleep(1)
 #调用winscp脚本开始上传文件了~
-winscpAuto.main()
-#文件都上传成功了，切换xshell开始走指令启动程序了~
-sleep(5)
-try:  
-    #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
-    requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData['test_10_156_53_58']['Xshell']+''},timeout=3.0)
-except requests.exceptions.RequestException as e:  
-    # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
-    print(f'xshell捕获到值错误: {e}')
-#调用xshell脚本开始处理上传的文件了~
-xshellAuto.main()
-#关闭浏览器
-chrome.quit()
-print("自动化结束了~")
+upFileStatus = winscpAuto.main()
+if(upFileStatus == None):
+    print("失败了？")
+    #关闭浏览器
+    chrome.quit()
+    failTk = tk.Tk()
+    failTk.withdraw()
+    failTk.after(3000, failTk.destroy)
+    messagebox.showerror("错误", "在上传文件时发生了问题？建议查看一下哦～")
+    #程序结束
+    sys.exit()
+else:
+    print("成功了！")
+    try:  
+        #文件都上传成功了，切换xshell开始走指令启动程序了~
+        sleep(5)
+        #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+        requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData['test_10_156_53_58']['Xshell']+''},timeout=3.0)
+    except requests.exceptions.RequestException as e:  
+        # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+        print(f'xshell捕获到值错误: {e}')
+    #调用xshell脚本开始处理上传的文件了~
+    xshellAuto.main()
+    #关闭浏览器
+    chrome.quit()
+    print("自动化正常结束了~")
