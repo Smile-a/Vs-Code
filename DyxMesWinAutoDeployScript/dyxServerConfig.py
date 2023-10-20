@@ -44,3 +44,5 @@ maven_Profile = "test"
 #那个json文件是存储登录信息的，各个服务器的登录参数，有多少个节点他就会去获取对应的参数信息
 #加个有点多余的参数吧，免得去改脚本里面的参数，在这里加对应json文件里面的前台服务器标题，你要部署哪一台机器，就填哪一个json的key，一定要对应奥不然找不到就尴尬了
 frontendTitleKey = "test_10_156_53_58"
+testOneTitleKey = "test_10_156_53_59"
+testTwoTitleKey = "test_10_156_53_60"

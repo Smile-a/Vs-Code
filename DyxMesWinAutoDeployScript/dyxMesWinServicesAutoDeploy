@@ -278,16 +278,16 @@ def javaJarPackageAuto():
     #打包成功了，准备上传吧,原来还想着做个开关，指定替换，我都自动了，我直接全换了不就ok了吗  
     #60的
     #base
-    jarUp(dyxServerConfig.jar_base + dyxServerConfig.jar_base_Name,dyxServerConfig.jar_base_Name,"base_start")
+    jarUp(dyxServerConfig.jar_base + dyxServerConfig.jar_base_Name,dyxServerConfig.jar_base_Name,"base_start",dyxServerConfig.testTwoTitleKey)
     #quality
-    jarUp(dyxServerConfig.jar_quality + dyxServerConfig.jar_quality_Name,dyxServerConfig.jar_quality_Name,"quality_start")
+    jarUp(dyxServerConfig.jar_quality + dyxServerConfig.jar_quality_Name,dyxServerConfig.jar_quality_Name,"quality_start",dyxServerConfig.testTwoTitleKey)
     #warehouse
-    jarUp(dyxServerConfig.jar_warehouse + dyxServerConfig.jar_warehouse_Name,dyxServerConfig.jar_warehouse_Name,"warehouse_start")
+    jarUp(dyxServerConfig.jar_warehouse + dyxServerConfig.jar_warehouse_Name,dyxServerConfig.jar_warehouse_Name,"warehouse_start",dyxServerConfig.testTwoTitleKey)
     #59的
     #plan
-    jarUp(dyxServerConfig.jar_plan + dyxServerConfig.jar_plan_Name,dyxServerConfig.jar_plan_Name,"plan_start")
+    jarUp(dyxServerConfig.jar_plan + dyxServerConfig.jar_plan_Name,dyxServerConfig.jar_plan_Name,"plan_start",dyxServerConfig.testOneTitleKey)
     #system
-    jarUp(dyxServerConfig.jar_system + dyxServerConfig.jar_system_Name,dyxServerConfig.jar_system_Name,"system_start")
+    jarUp(dyxServerConfig.jar_system + dyxServerConfig.jar_system_Name,dyxServerConfig.jar_system_Name,"system_start",dyxServerConfig.testOneTitleKey)
     print("jar包自动化结束")
 
 #maven打包操作
@@ -312,18 +312,54 @@ def mavenPack():
     os.chdir(dyxServerConfig.jarFilesPath)
     os.system(mvn_package)
 
-#拆分复用
-def jarUp(jarPath,jarName,jarStart):
-    print("真-开始上传！")
-    if(os.path.exists(jarPath)):
-        print("jar包存在,开始上传")
-        winscpAuto.main(jarPath,jarName)
-        sleep(1)
+#拆分复用---就是把前台那边的代码拆分一下过来复用
+def jarUp(jarPath,jarName,jarStart,titleKey):
+    print("准备打开Winscp")
+    # 读取文件内容  
+    with open('dyxmesServiceJSON.json', 'r') as file:
+        jsonFileData = json.load(file)
+    #构造请求winscp的参数
+    winscp_form_data = requests.structures.CaseInsensitiveDict()
+    winscp_form_data.update({'data': ''+jsonFileData[''+titleKey+'']['winscp']+''})
+    winscp_form_data.update({'username': ''})
+    winscp_form_data.update({'password': ''})
+    try:  
+        sleep(2)
+        #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+        requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
+    except requests.exceptions.RequestException as e:  
+        # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+        print(f'winscp捕获到值错误: {e}')
+    sleep(1)
+    #调用winscp脚本开始上传文件了~
+    upFileStatus = winscpAuto.main(jarPath,jarName)
+    if(upFileStatus == None):
+        print("失败了？")
+        #关闭浏览器
+        chrome.quit()
+        failTk = tk.Tk()
+        failTk.withdraw()
+        failTk.after(3000, failTk.destroy)
+        messagebox.showerror("错误", "在上传jar包时发生了问题？建议查看一下哦～")
+        #程序结束
+        sys.exit()
+    else:
+        print("成功了！")
+        try:  
+            #文件都上传成功了，切换xshell开始走指令启动程序了~
+            sleep(2)
+            #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+            requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData[''+titleKey+'']['Xshell']+''},timeout=3.0)
+        except requests.exceptions.RequestException as e: 
+            # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+            print(f'xshell捕获到值错误: {e}')
+        #调用xshell脚本开始处理上传的文件了~~ 改造一下，这里传入你要调用的脚本命令
         xshellStr = "nohup sh deploy_dyxmes.sh " + jarStart + " > /dev/null 2>&1 &',0.2"
         xshellAuto.main(xshellStr)
-        sleep(1)
-    else:
-        print(jarPath,"jar不存在请检查！！！！！！")
+        print("后台自动化正常结束了~")
+
+
+
 
 # 先把路径切进来
 print("我要开始浏览器登录自动化了~")
