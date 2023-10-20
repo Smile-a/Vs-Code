@@ -54,6 +54,14 @@ def main(shellStr):
     #很关键，每次输入了字之后shift一下 避免回车变成中文，懒得写强制修改输入法中文的方法了
     pyautogui.hotkey('shift')
     pyautogui.hotkey('enter')
+    #做个判断，前台脚本我改了的不用切路径
+    if(shellStr in 'deploy_dyxmes.sh'):
+        pyautogui.typewrite('cd',0.2)
+        pyautogui.hotkey('shift')
+        pyautogui.typewrite(' /home/mes',0.2)
+        pyautogui.hotkey('shift')
+        pyautogui.hotkey('enter')
+        #那就要先cd去/home/mes里面了在执行脚本
     #自己加的脚本--这样自动化前面出了问题的化，这个脚本问题不大
     #pyautogui.typewrite('nohup sh deploy-frontend-Auto.sh > /dev/null 2>&1 &',0.2) #这个直接关闭窗口都行
     #pyautogui.typewrite('sh deploy-frontend-Auto.sh',0.2) #这个就要硬等xshell的窗口命令跑完才可以奥
