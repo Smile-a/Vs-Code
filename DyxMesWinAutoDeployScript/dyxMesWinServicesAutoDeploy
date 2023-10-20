@@ -20,6 +20,7 @@ from pywinauto.application import Application
 from pywinauto import mouse
 from pyautogui import scroll
 from PIL import Image
+from urllib.request import urlopen
 
 
 #要登陆堡垒机的账号和密码
@@ -233,8 +234,13 @@ options.add_experimental_option('detach', True)
 chrome = webdriver.Chrome(options=options)
 #设置浏览器窗口最大化
 chrome.maximize_window()
-#登陆dyx
-chrome.get("https://10.157.234.151/index.php/Public/index/stra_name/sms_local")
+try:  
+    #登陆堡垒机
+    chrome.get(dyxServerConfig.bljLoginPathUrl)
+except Exception as e:  
+    print("登录堡垒机失败！")
+    chrome.close()
+    sys.exit()
 #弹窗等待一下
 alterAuto(3000)
 #这个地址一打开就说不安全，点击高级按钮然后访问真实地址就可以正常登录了
@@ -329,7 +335,7 @@ sleep(5)
 #刷新浏览器
 #chrome.refresh()
 #全局搜索页面
-allList = 'https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64'
+allList = dyxServerConfig.bljAllListPathUrl
 chrome.get(allList)
 sleep(1)
 #更新登录密钥--目前写的是直接把测试的三台服务器都更新了，以后有需要或者别的自己加就行
@@ -340,13 +346,19 @@ sleep(1)
 
 #是不是这里可以加一个打包的方法 把前台后台打包好
 #咋还非要切到那个路径才行呢 烦死了
-os.chdir("C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\build")
-buildBat_path = r'C:\Users\wsd\eclipse-workspace\dyxmesProject\hbtobacco-dyxmes-frontend\build\build.bat'
-os.system(buildBat_path)
+os.chdir(dyxServerConfig.frontendPath)
+#执行打包脚本
+os.system(dyxServerConfig.frontendBuildPath)
 
-#然后还得把路径切换回来，这么不智能吗？
+#插个广告
+alterTk = tk.Tk()
+alterTk.withdraw()
+alterTk.after(2000, alterTk.destroy)
+messagebox.showerror("提示", "稍等一下，后台跑一下打包脚本~")
+
+#然后还得把路径切换回来，这么不智能吗,还是我没找到方法
 os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
-print("前台打包成功，切换路径，当前路径",os.getcwd())
+print("打包成功，切换路径，当前路径",os.getcwd())
 
 print("准备打开Winscp")
 # 读取文件内容  
