@@ -55,7 +55,7 @@ def main(shellStr):
     pyautogui.hotkey('shift')
     pyautogui.hotkey('enter')
     #做个判断，前台脚本我改了的不用切路径
-    if(shellStr in 'deploy_dyxmes.sh'):
+    if('deploy_dyxmes.sh' in shellStr):
         pyautogui.typewrite('cd',0.2)
         pyautogui.hotkey('shift')
         pyautogui.typewrite(' /home/mes',0.2)
