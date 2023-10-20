@@ -278,16 +278,16 @@ def javaJarPackageAuto():
     #打包成功了，准备上传吧,原来还想着做个开关，指定替换，我都自动了，我直接全换了不就ok了吗  
     #60的
     #base
-    jarUp(dyxServerConfig.jar_base + dyxServerConfig.jar_base_Name,dyxServerConfig.jar_base_Name,"base_start",dyxServerConfig.testTwoTitleKey)
+    jarUp(dyxServerConfig.jar_base,dyxServerConfig.jar_base_Name,"base_start",dyxServerConfig.testTwoTitleKey)
     #quality
-    jarUp(dyxServerConfig.jar_quality + dyxServerConfig.jar_quality_Name,dyxServerConfig.jar_quality_Name,"quality_start",dyxServerConfig.testTwoTitleKey)
+    jarUp(dyxServerConfig.jar_quality,dyxServerConfig.jar_quality_Name,"quality_start",dyxServerConfig.testTwoTitleKey)
     #warehouse
-    jarUp(dyxServerConfig.jar_warehouse + dyxServerConfig.jar_warehouse_Name,dyxServerConfig.jar_warehouse_Name,"warehouse_start",dyxServerConfig.testTwoTitleKey)
+    jarUp(dyxServerConfig.jar_warehouse,dyxServerConfig.jar_warehouse_Name,"warehouse_start",dyxServerConfig.testTwoTitleKey)
     #59的
     #plan
-    jarUp(dyxServerConfig.jar_plan + dyxServerConfig.jar_plan_Name,dyxServerConfig.jar_plan_Name,"plan_start",dyxServerConfig.testOneTitleKey)
+    jarUp(dyxServerConfig.jar_plan,dyxServerConfig.jar_plan_Name,"plan_start",dyxServerConfig.testOneTitleKey)
     #system
-    jarUp(dyxServerConfig.jar_system + dyxServerConfig.jar_system_Name,dyxServerConfig.jar_system_Name,"system_start",dyxServerConfig.testOneTitleKey)
+    jarUp(dyxServerConfig.jar_system,dyxServerConfig.jar_system_Name,"system_start",dyxServerConfig.testOneTitleKey)
     print("jar包自动化结束")
 
 #maven打包操作
@@ -315,8 +315,9 @@ def mavenPack():
 #拆分复用---就是把前台那边的代码拆分一下过来复用
 def jarUp(jarPath,jarName,jarStart,titleKey):
     print("准备打开Winscp")
-    # 读取文件内容  
-    with open('dyxmesServiceJSON.json', 'r') as file:
+    # 读取文件内容 emm 这时候路径已经切到jar包这边了，懒得切回去就直接读取吧，问题不大C:\Users\wsd\eclipse-workspace\dyxmesProject\hbtobacco-dyxmes-parent\hbtobacco-dyxmes-base\target\hbtobacco-dyxmes-base.jar
+    
+    with open(pyFilePath+'\\dyxmesServiceJSON.json', 'r') as file:
         jsonFileData = json.load(file)
     #构造请求winscp的参数
     winscp_form_data = requests.structures.CaseInsensitiveDict()
@@ -354,7 +355,7 @@ def jarUp(jarPath,jarName,jarStart,titleKey):
             # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
             print(f'xshell捕获到值错误: {e}')
         #调用xshell脚本开始处理上传的文件了~~ 改造一下，这里传入你要调用的脚本命令
-        xshellStr = "nohup sh deploy_dyxmes.sh " + jarStart + " > /dev/null 2>&1 &',0.2"
+        xshellStr = "nohup sh deploy_dyxmes.sh " + jarStart + " > /dev/null 2>&1 &"
         xshellAuto.main(xshellStr)
         print("后台自动化正常结束了~")
 
@@ -370,9 +371,6 @@ print("文件所在路径",pyFilePath)
 os.chdir(pyFilePath)
 print("切换路径，当前路径",os.getcwd())
 print("鼠标当前位置:",pyautogui.position())
-
-javaJarPackageAuto()
-sys.exit()
 
 #检查一下能不能ping的通10.157.234.151再继续，后面可以自己加启动vpn
 pingHostname  = dyxServerConfig.pingHostname
