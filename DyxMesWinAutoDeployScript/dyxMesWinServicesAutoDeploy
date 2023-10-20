@@ -273,11 +273,57 @@ def frontendPackageAuto():
 #如果说前台打包替换都完活了的话，可以开始后台jar包的部署了
 def javaJarPackageAuto():
     print("jar包自动化开始")
-    
+    #mvn打包
+    mavenPack()
+    #打包成功了，准备上传吧,原来还想着做个开关，指定替换，我都自动了，我直接全换了不就ok了吗  
+    #60的
+    #base
+    jarUp(dyxServerConfig.jar_base + dyxServerConfig.jar_base_Name,dyxServerConfig.jar_base_Name,"base_start")
+    #quality
+    jarUp(dyxServerConfig.jar_quality + dyxServerConfig.jar_quality_Name,dyxServerConfig.jar_quality_Name,"quality_start")
+    #warehouse
+    jarUp(dyxServerConfig.jar_warehouse + dyxServerConfig.jar_warehouse_Name,dyxServerConfig.jar_warehouse_Name,"warehouse_start")
+    #59的
+    #plan
+    jarUp(dyxServerConfig.jar_plan + dyxServerConfig.jar_plan_Name,dyxServerConfig.jar_plan_Name,"plan_start")
+    #system
+    jarUp(dyxServerConfig.jar_system + dyxServerConfig.jar_system_Name,dyxServerConfig.jar_system_Name,"system_start")
     print("jar包自动化结束")
 
+#maven打包操作
+def mavenPack():
+    print("切换到目录，执行maven命令打包")
+    mvn_package = "mvn clean package -P " + dyxServerConfig.maven_Profile
+    mvn_install = "mvn clean install -P " + dyxServerConfig.maven_Profile
+    #切换到父目录
+    os.chdir(dyxServerConfig.jarFilesPath)
+    os.system("mvn clean")
+    #还是先切换到commapi和mobile俩install一下再说吧，不然有时候他们更新了接口的
+    os.chdir(dyxServerConfig.jar_commonapi)
+    #执行install
+    os.system(mvn_install)
+    sleep(2)
+    #切换到mobile继续
+    os.chdir(dyxServerConfig.jar_mobile)
+    #执行install
+    os.system(mvn_install)
+    sleep(2)
+    #可以了，切回父目录，直接全部打包!
+    os.chdir(dyxServerConfig.jarFilesPath)
+    os.system(mvn_package)
 
-
+#拆分复用
+def jarUp(jarPath,jarName,jarStart):
+    print("真-开始上传！")
+    if(os.path.exists(jarPath)):
+        print("jar包存在,开始上传")
+        winscpAuto.main(jarPath,jarName)
+        sleep(1)
+        xshellStr = "nohup sh deploy_dyxmes.sh " + jarStart + " > /dev/null 2>&1 &',0.2"
+        xshellAuto.main(xshellStr)
+        sleep(1)
+    else:
+        print(jarPath,"jar不存在请检查！！！！！！")
 
 # 先把路径切进来
 print("我要开始浏览器登录自动化了~")
@@ -288,6 +334,9 @@ print("文件所在路径",pyFilePath)
 os.chdir(pyFilePath)
 print("切换路径，当前路径",os.getcwd())
 print("鼠标当前位置:",pyautogui.position())
+
+javaJarPackageAuto()
+sys.exit()
 
 #检查一下能不能ping的通10.157.234.151再继续，后面可以自己加启动vpn
 pingHostname  = dyxServerConfig.pingHostname

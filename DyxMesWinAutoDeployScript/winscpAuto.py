@@ -18,7 +18,8 @@ from pywinauto import mouse
 from pyautogui import scroll
 from PIL import Image
 
-
+#filePath=文件全路径
+#fileName=文件单独名称
 def main(filePath,fileName):
     #好坑，这个地方进来没有等待，winscp的窗口都没加载好，自然找不到。。。
     sleep(5)

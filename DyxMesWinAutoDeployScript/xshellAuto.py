@@ -61,7 +61,7 @@ def main(shellStr):
     pyautogui.hotkey('shift')
     pyautogui.hotkey('enter')
     #等脚本慢慢跑就行了,前台包，15s应该解压无压力吧~  后台jar包还是直接后台跑就行了其余不管
-    sleep(15)
+    sleep(10)
     window.set_focus()
     #自带的close居然会有异常?
     pyautogui.hotkey('alt','f4')
