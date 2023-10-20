@@ -215,6 +215,15 @@ os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
 print("切换路径，当前路径",os.getcwd())
 print("鼠标当前位置:",pyautogui.position())
 
+#检查一下能不能ping的通10.157.234.151再继续，后面可以自己加启动vpn
+pingHostname  = '10.157.234.151'
+pingResponse = os.system("ping -n 1 " + pingHostname)
+if pingResponse == 0:
+    print('Ping successful')
+else:
+    print('Ping failed.')
+    sys.exit()
+
 #谷歌浏览器驱动配置
 print("开始操作浏览器~")
 options = webdriver.ChromeOptions()
@@ -330,9 +339,14 @@ chrome.get(allList)
 sleep(1)
 
 #是不是这里可以加一个打包的方法 把前台后台打包好
-# os.chdir("C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\build")
-# buildBat_path = r'C:\Users\wsd\eclipse-workspace\dyxmesProject\hbtobacco-dyxmes-frontend\build\build.bat'
-# os.system(buildBat_path)
+#咋还非要切到那个路径才行呢 烦死了
+os.chdir("C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\build")
+buildBat_path = r'C:\Users\wsd\eclipse-workspace\dyxmesProject\hbtobacco-dyxmes-frontend\build\build.bat'
+os.system(buildBat_path)
+
+#然后还得把路径切换回来，这么不智能吗？
+os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
+print("前台打包成功，切换路径，当前路径",os.getcwd())
 
 print("准备打开Winscp")
 # 读取文件内容  
@@ -367,7 +381,7 @@ else:
     print("成功了！")
     try:  
         #文件都上传成功了，切换xshell开始走指令启动程序了~
-        sleep(5)
+        sleep(2)
         #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
         requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData['test_10_156_53_58']['Xshell']+''},timeout=3.0)
     except requests.exceptions.RequestException as e:  

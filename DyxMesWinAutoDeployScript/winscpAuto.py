@@ -68,7 +68,7 @@ def main():
         fileNullErrTk.withdraw()
         fileNullErrTk.after(3000, fileNullErrTk.destroy)
         messagebox.showerror("错误", "打包上传文件不存在，请检查!")
-        sys.exit()
+        return
     #获取焦点
     window.set_focus()
     #选择文件
@@ -96,6 +96,7 @@ def main():
             print("文件存在,上传还未完成，请等待！")
         else:
             print("文件不存在了，上传成功了！!!")
+            window.set_focus()
             #上传成功后关闭窗口 用window.close()会有问题，很怪
             pyautogui.hotkey('alt', 'f4')
             #确认关闭 你要是打勾了应该没问题了
