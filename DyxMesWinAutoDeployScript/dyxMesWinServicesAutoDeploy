@@ -24,10 +24,10 @@ from urllib.request import urlopen
 
 
 #要登陆堡垒机的账号和密码
-qwAccount='anwei'
-qwPassword='An123456'
+qwAccount=dyxServerConfig.loginUserName
+qwPassword=dyxServerConfig.qwPassword
 #企业微信地址
-wxWorkPath = 'C:\Program Files (x86)\WXWork\WXWork.exe'
+wxWorkPath = dyxServerConfig.wxWorkPath
 title = '企业微信'
 # 设置自动化操作时间间隔
 pyautogui.PAUSE = 0.5
@@ -210,10 +210,71 @@ def getHtmlValue():
 #前台项目打包自动化
 def frontendPackageAuto():
     print("前台自动化开始")
+    #咋还非要切到那个路径才行呢 烦死了
+    os.chdir(dyxServerConfig.frontendPath)
+    #执行打包脚本
+    os.system(dyxServerConfig.frontendBuildPath)
+
+    #插个广告
+    alterTk = tk.Tk()
+    alterTk.withdraw()
+    alterTk.after(3000, alterTk.destroy)
+    messagebox.showerror("提示", "稍等一下，前台打包脚本跑一下~")
+
+    #然后还得把路径切换回来，这么不智能吗,还是我没找到方法?
+    os.chdir(pyFilePath)
+    print("打包成功，切换路径，当前路径",os.getcwd())
+
+    print("准备打开Winscp")
+    # 读取文件内容  
+    with open('dyxmesServiceJSON.json', 'r') as file:
+        jsonFileData = json.load(file)
+    #构造请求winscp的参数
+    winscp_form_data = requests.structures.CaseInsensitiveDict()
+    #winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_58']['winscp']+''})
+    winscp_form_data.update({'data': ''+jsonFileData[''+dyxServerConfig.frontendTitleKey+'']['winscp']+''})
+    winscp_form_data.update({'username': ''})
+    winscp_form_data.update({'password': ''})
+    try:  
+        sleep(2)
+        #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+        requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
+    except requests.exceptions.RequestException as e:  
+        # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+        print(f'winscp捕获到值错误: {e}')
+    sleep(1)
+    #调用winscp脚本开始上传文件了~
+    upFileStatus = winscpAuto.main(dyxServerConfig.frontendPath,dyxServerConfig.frontendZipName)
+    if(upFileStatus == None):
+        print("失败了？")
+        #关闭浏览器
+        chrome.quit()
+        failTk = tk.Tk()
+        failTk.withdraw()
+        failTk.after(3000, failTk.destroy)
+        messagebox.showerror("错误", "在上传文件时发生了问题？建议查看一下哦～")
+        #程序结束
+        sys.exit()
+    else:
+        print("成功了！")
+        try:  
+            #文件都上传成功了，切换xshell开始走指令启动程序了~
+            sleep(2)
+            #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
+            requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData[''+dyxServerConfig.frontendTitleKey+'']['Xshell']+''},timeout=3.0)
+        except requests.exceptions.RequestException as e: 
+            # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
+            print(f'xshell捕获到值错误: {e}')
+        #调用xshell脚本开始处理上传的文件了~~ 改造一下，这里传入你要调用的脚本命令
+        xshellAuto.main("sh deploy-frontend-Auto.sh")
+        print("前台自动化正常结束了~")
+
 
 #如果说前台打包替换都完活了的话，可以开始后台jar包的部署了
 def javaJarPackageAuto():
     print("jar包自动化开始")
+    
+    print("jar包自动化结束")
 
 
 
@@ -356,63 +417,11 @@ getHtmlValue()
 chrome.get(allList)
 sleep(1)
 
-#是不是这里可以加一个打包的方法 把前台后台打包好
-#咋还非要切到那个路径才行呢 烦死了
-os.chdir(dyxServerConfig.frontendPath)
-#执行打包脚本
-os.system(dyxServerConfig.frontendBuildPath)
-
-#插个广告
-alterTk = tk.Tk()
-alterTk.withdraw()
-alterTk.after(3000, alterTk.destroy)
-messagebox.showerror("提示", "稍等一下，后台跑一下打包脚本~")
-
-#然后还得把路径切换回来，这么不智能吗,还是我没找到方法?
-os.chdir(pyFilePath)
-print("打包成功，切换路径，当前路径",os.getcwd())
-
-print("准备打开Winscp")
-# 读取文件内容  
-with open('dyxmesServiceJSON.json', 'r') as file:
-    jsonFileData = json.load(file)
-#构造请求winscp的参数
-winscp_form_data = requests.structures.CaseInsensitiveDict()
-winscp_form_data.update({'data': ''+jsonFileData['test_10_156_53_58']['winscp']+''})
-winscp_form_data.update({'username': ''})
-winscp_form_data.update({'password': ''})
-try:  
-    sleep(2)
-    #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
-    requests.post('http://127.0.0.1:8888/RunWinScp', data=winscp_form_data,timeout=3.0)
-except requests.exceptions.RequestException as e:  
-    # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
-    print(f'winscp捕获到值错误: {e}')
+#调用前台打包方法
+frontendPackageAuto()
 sleep(1)
-#调用winscp脚本开始上传文件了~
-upFileStatus = winscpAuto.main()
-if(upFileStatus == None):
-    print("失败了？")
-    #关闭浏览器
-    chrome.quit()
-    failTk = tk.Tk()
-    failTk.withdraw()
-    failTk.after(3000, failTk.destroy)
-    messagebox.showerror("错误", "在上传文件时发生了问题？建议查看一下哦～")
-    #程序结束
-    sys.exit()
-else:
-    print("成功了！")
-    try:  
-        #文件都上传成功了，切换xshell开始走指令启动程序了~
-        sleep(2)
-        #故意设置三秒的让他直接结束就ok了，不然后面的还要等待post响应吗
-        requests.post('http://127.0.0.1:8888/RunTerm',{'data':''+jsonFileData['test_10_156_53_58']['Xshell']+''},timeout=3.0)
-    except requests.exceptions.RequestException as e:  
-        # 当捕获到特定类型的异常时，打印出异常信息，然后继续执行  
-        print(f'xshell捕获到值错误: {e}')
-    #调用xshell脚本开始处理上传的文件了~
-    xshellAuto.main()
-    #关闭浏览器
-    chrome.quit()
-    print("自动化正常结束了~")
+#调用后台打包方法
+javaJarPackageAuto()
+sleep(1)
+#关闭浏览器
+chrome.quit()
