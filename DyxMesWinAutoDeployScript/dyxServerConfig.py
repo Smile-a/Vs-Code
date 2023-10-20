@@ -1,6 +1,7 @@
 #登录用户名称
 loginUserName = "anwei"
 #堡垒机登录页面url
+pingHostname = "10.157.234.151"
 bljLoginPathUrl = "https://10.157.234.151/index.php/Public/index/stra_name/sms_local"
 bljAllListPathUrl = "https://10.157.234.151/index.php/UserWork/index/type/all/cpu/64"
 #winscp软件窗口标题

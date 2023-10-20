@@ -59,6 +59,8 @@ def getYzmCode():
     # 程序下边缘距离显示器上边缘的像素
     b_coordinate = coordinate.bottom
 
+    #这里可以还有一步，先选择左下角 我的企业，然后选中烟的不然有时候公司的消息，你就找不到验证码了,但是，，提醒一下就ok
+    
     #选中消息
     #mouse.click(coords=(l_coordinate + 25, b_coordinate - 550))
     #偶然发现的，如果直接单击会有问题，你要是来了一条消息，你单机，他就是第一条，置顶的消息通知都会被顶走
@@ -205,6 +207,13 @@ def getHtmlValue():
             with open('dyxmesServiceJSON.json', 'w') as file:  
                 json.dump(config_data, file, indent=4)
 
+#前台项目打包自动化
+def frontendPackageAuto():
+    print("前台自动化开始")
+
+#如果说前台打包替换都完活了的话，可以开始后台jar包的部署了
+def javaJarPackageAuto():
+    print("jar包自动化开始")
 
 
 
@@ -212,12 +221,15 @@ def getHtmlValue():
 # 先把路径切进来
 print("我要开始浏览器登录自动化了~")
 print("当前路径",os.getcwd())
-os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
+pyFilePath = sys.path[0]
+print("文件所在路径",pyFilePath)
+#进入到文件夹所在路径
+os.chdir(pyFilePath)
 print("切换路径，当前路径",os.getcwd())
 print("鼠标当前位置:",pyautogui.position())
 
 #检查一下能不能ping的通10.157.234.151再继续，后面可以自己加启动vpn
-pingHostname  = '10.157.234.151'
+pingHostname  = dyxServerConfig.pingHostname
 pingResponse = os.system("ping -n 1 " + pingHostname)
 if pingResponse == 0:
     print('Ping successful')
@@ -353,11 +365,11 @@ os.system(dyxServerConfig.frontendBuildPath)
 #插个广告
 alterTk = tk.Tk()
 alterTk.withdraw()
-alterTk.after(2000, alterTk.destroy)
+alterTk.after(3000, alterTk.destroy)
 messagebox.showerror("提示", "稍等一下，后台跑一下打包脚本~")
 
-#然后还得把路径切换回来，这么不智能吗,还是我没找到方法
-os.chdir("C:\MyProject\Vs-Code\DyxMesWinAutoDeployScript")
+#然后还得把路径切换回来，这么不智能吗,还是我没找到方法?
+os.chdir(pyFilePath)
 print("打包成功，切换路径，当前路径",os.getcwd())
 
 print("准备打开Winscp")
