@@ -293,11 +293,11 @@ def javaJarPackageAuto():
 #maven打包操作
 def mavenPack():
     print("切换到目录，执行maven命令打包")
-    mvn_package = "mvn clean package -U -P " + dyxServerConfig.maven_Profile
-    mvn_install = "mvn clean install -U -P " + dyxServerConfig.maven_Profile
+    mvn_package = "mvn clean package -P " + dyxServerConfig.maven_Profile
+    mvn_install = "mvn clean install -P " + dyxServerConfig.maven_Profile
     #切换到父目录
     os.chdir(dyxServerConfig.jarFilesPath)
-    os.system("mvn clean")
+    os.system("mvn clean -U")
     #还是先切换到commapi和mobile俩install一下再说吧，不然有时候他们更新了接口的
     os.chdir(dyxServerConfig.jar_commonapi)
     #执行install
