@@ -293,8 +293,8 @@ def javaJarPackageAuto():
 #maven打包操作
 def mavenPack():
     print("切换到目录，执行maven命令打包")
-    mvn_package = "mvn clean package -P " + dyxServerConfig.maven_Profile
-    mvn_install = "mvn clean install -P " + dyxServerConfig.maven_Profile
+    mvn_package = "mvn clean package -U -P " + dyxServerConfig.maven_Profile
+    mvn_install = "mvn clean install -U -P " + dyxServerConfig.maven_Profile
     #切换到父目录
     os.chdir(dyxServerConfig.jarFilesPath)
     os.system("mvn clean")
