@@ -17,6 +17,7 @@ def get_local_ip():
 
 if __name__=='__main__':
     while(True):
+        sleep(1)
         free = get_sys_info()
         if(free > 95):
             print("不好辣，服务器内存不够了~",get_local_ip())
