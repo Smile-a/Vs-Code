@@ -20,5 +20,5 @@ if __name__=='__main__':
         free = get_sys_info()
         if(free > 95):
             print("不好辣，服务器内存不够了~",get_local_ip())
-            #发送邮件通知
+            #发送邮件通知,等处理完了再次启动脚本即可。
             break
