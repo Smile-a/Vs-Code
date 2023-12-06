@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "Demo",
+            "request": "launch",
+            "mainClass": "Demo",
+            "projectName": "Vs-Code_77a4fae3"
+        },
+        {
+            "type": "java",
+            "name": "Java: 当前文件",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
             "name": "Python: 当前文件",
             "type": "python",
             "request": "launch",
