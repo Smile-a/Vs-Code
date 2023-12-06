@@ -37,6 +37,13 @@ if(__name__=="__main__"):
     pyFilePath = sys.path[0]
     print("程序路径:",pyFilePath)
     
+    #如果有想法的话可以自己改造，通过命令行输入的参数来启动对应的模块
+    # @echo off  
+    # python "C:\\MyProject\\Vs-Code\\dyx3D\\compAuto.py" %* kanabn
+    # ::pause
+    #param = sys.argv[1]
+    #print("跟随命令传入的参数为:",param)
+    
     #切换目录,打包前台项目
     print("开始打包前台项目...")
     os.chdir(frontendBuildPath)
