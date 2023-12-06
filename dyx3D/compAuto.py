@@ -1,4 +1,5 @@
 import os
+import sys
 import socket
 import paramiko
 
@@ -10,15 +11,17 @@ isKanban = True
 #路径配置
 ipAddr = "192.168.42.127"
 userName = "root"
-password = "***"
+password = "whlinux"
 #前台页面打包脚本路径
 frontendBuildPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\build\\"
+frontendBatName = "build.bat"
 #后台打包脚本路径
 jarPackBuildPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\"
+#在调用这个bat的时候先去把他最后一行的cmd /k注释掉，不然会卡住
 jarBatCompName = "打包-公司环境.bat"
 #具体上传到服务器的文件
-frontendPath = 'C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\build\dist-pc.zip'
-systemJarPath = 'C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\hbtobacco-dyxvisualization-system\\tatger\\hbtobacco-dyxvisualization-system.jar'
+frontendPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\build\dist-pc.zip"
+systemJarPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\hbtobacco-dyxvisualization-system\\target\\hbtobacco-dyxvisualization-system.jar"
 kanbanJarPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\hbtobacco-dyxvisualization-kanban\\target\\hbtobacco-dyxvisualization-kanban.jar"
 #上传jar包和zip文件到服务器配置
 FrontendlinuxPath = '/home/dyxvisual/dist-pc.zip'
@@ -30,10 +33,14 @@ cdStr = 'cd /home/dyxvisual/; '
 #3d可视化到开发环境打包
 if(__name__=="__main__"):
     
+    #多此一举的操作
+    pyFilePath = sys.path[0]
+    print("程序路径:",pyFilePath)
+    
     #切换目录,打包前台项目
     print("开始打包前台项目...")
     os.chdir(frontendBuildPath)
-    os.system("build.bat")
+    os.system(frontendBatName)
     print("前台项目打包完成！")
     
     #切换目录,打包后台项目
@@ -42,6 +49,9 @@ if(__name__=="__main__"):
     os.system(jarBatCompName)
     print("后台项目打包完成!")
     
+    #切换回来
+    os.chdir(pyFilePath)
+    print("自动化开始!")
     
     # 创建一个套接字对象，连接到远程服务器  
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
@@ -86,7 +96,7 @@ if(__name__=="__main__"):
     if isKanban:
         #上传文件
         print("链接服务器成功，开始上传kanban.jar,请等待...")
-        result = sftp.put(kanbanJarPath, KanbanlinuxPath)  
+        result = sftp.put(kanbanJarPath, KanbanlinuxPath)
         if result:
             print("kanban上传成功!")
             #执行命令.好坑!就是execute_command() 他是a single session，每次执行完后都要回到缺省目录。所以可以 .execute_command('cd  /var; pwd')
@@ -98,6 +108,6 @@ if(__name__=="__main__"):
             print("kanban上传失败!")
             
     # 关闭连接  
-    print("关闭连接")
+    print("自动化结束，关闭连接")
     sftp.close()  
     ssh.close()
