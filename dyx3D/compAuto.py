@@ -3,7 +3,6 @@ import sys
 import socket
 import paramiko
 import compAutoConfig
-from time import sleep,time
 
 # 打包成exe基础命令就够了，默认会打包成文件夹
 # pyinstaller -D -c -i naotou.ico compAuto.py 文件夹
@@ -104,4 +103,5 @@ if(__name__=="__main__"):
     print("自动化结束，关闭连接")
     sftp.close()
     ssh.close()
-    sleep(10)
+    
+    os.system("pause")
