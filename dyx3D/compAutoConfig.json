@@ -1,0 +1,20 @@
+{
+    "isFrontend": true,
+    "isSystem": true,
+    "isKanban": true,
+    "ipAddr": "192.168.42.127",
+    "userName": "root",
+    "password": "whlinux",
+    "frontendDirPath": "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\",
+    "frontendBuildPath": "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\build\\",
+    "frontendBatName": "build.bat",
+    "jarPackBuildPath": "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\",
+    "jarBatCompName": "打包-公司环境.bat",
+    "frontendPath": "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\build\\dist-pc.zip",
+    "systemJarPath": "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\hbtobacco-dyxvisualization-system\\target\\hbtobacco-dyxvisualization-system.jar",
+    "kanbanJarPath": "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-parent\\hbtobacco-dyxvisualization-kanban\\target\\hbtobacco-dyxvisualization-kanban.jar",
+    "FrontendlinuxPath": "/home/dyxvisual/dist-pc.zip",
+    "SystemlinuxPath": "/root/hbtobacco-dyxvisualization-system.jar",
+    "KanbanlinuxPath": "/root/hbtobacco-dyxvisualization-kanban.jar",
+    "cdStr": "cd /home/dyxvisual/; "
+}
