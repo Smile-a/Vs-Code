@@ -5,8 +5,9 @@ import paramiko
 import compAutoConfig
 
 # 打包成exe基础命令就够了，默认会打包成文件夹
-# pyinstaller -D -c -i naotou.ico compAuto.py
-# -D 默认文件夹  -W 单个文件 -c 默认黑框框  -w 隐藏黑框框
+# pyinstaller -D -c -i naotou.ico compAuto.py 文件夹
+# pyinstaller -F -c -i naotou.ico compAuto.py 单个文件
+# -D 默认文件夹  -F 单个文件 -c 默认黑框框  -w 隐藏黑框框
 
 #3d可视化到开发环境打包
 if(__name__=="__main__"):
@@ -100,8 +101,8 @@ if(__name__=="__main__"):
     
     # 关闭连接  
     print("自动化结束，关闭连接")
-    sftp.close()  
+    sftp.close()
     ssh.close()
     
     os.system("pause")
-    input("Press Enter to exit...")
+    input()
