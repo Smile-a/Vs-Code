@@ -12,6 +12,8 @@ isKanban = True
 ipAddr = "192.168.42.127"
 userName = "root"
 password = "whlinux"
+#前台项目文件夹地址--懒得在脚本里面svn update
+frontendDirPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\"
 #前台页面打包脚本路径
 frontendBuildPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxvisualization-frontend\\build\\"
 frontendBatName = "build.bat"
@@ -45,6 +47,11 @@ if(__name__=="__main__"):
     #print("跟随命令传入的参数为:",param)
     
     #切换目录,打包前台项目
+    print("开始更新前台项目...")
+    os.chdir(frontendDirPath)
+    os.system("svn update")
+    print("前台项目svn更新完毕...")
+    
     print("开始打包前台项目...")
     os.chdir(frontendBuildPath)
     os.system(frontendBatName)
