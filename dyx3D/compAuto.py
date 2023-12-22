@@ -41,8 +41,8 @@ if(__name__=="__main__"):
     os.system(compAutoConfig.jarBatCompName)
     print("后台项目打包完成!")
     
-    #切换回来
-    os.chdir(pyFilePath)
+    #切换回来--py文件没问题，exe打包成单独文件就不可以看了，因为是zip
+    #os.chdir(pyFilePath)
     print("自动化开始!")
     
     # 创建一个套接字对象，连接到远程服务器  
