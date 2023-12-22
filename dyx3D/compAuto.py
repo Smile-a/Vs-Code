@@ -12,8 +12,10 @@ import compAutoConfig
 #3d可视化到开发环境打包
 if(__name__=="__main__"):
     #多此一举的操作
-    pyFilePath = sys.path[0]
+    #pyFilePath = sys.path[0] #py脚本用这个
+    pyFilePath = os.getcwd()  #打包成exe要用这个
     print("程序路径:",pyFilePath)
+    
     print("【淡雅香3D可视化项目公司环境自动打包脚本】")
     print("可能会较慢，因为是从本地上传的奥~")
     
@@ -42,7 +44,7 @@ if(__name__=="__main__"):
     print("后台项目打包完成!")
     
     #切换回来--py文件没问题，exe打包成单独文件就不可以看了，因为是zip
-    #os.chdir(pyFilePath)
+    os.chdir(pyFilePath)
     print("自动化开始!")
     
     # 创建一个套接字对象，连接到远程服务器  
