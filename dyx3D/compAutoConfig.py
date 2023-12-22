@@ -1,10 +1,10 @@
 #是否上传开关 True上传，但只是上传到服务器，并不会阻止他们拉代码和打包
 #前台
-isFrontend = True
+isFrontend = False
 #系统模块
-isSystem = True
+isSystem = False
 #看板模块
-isKanban = True
+isKanban = False
 #路径配置
 ipAddr = "192.168.42.127"
 userName = "root"

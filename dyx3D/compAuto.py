@@ -103,5 +103,4 @@ if(__name__=="__main__"):
     sftp.close()  
     ssh.close()
     
-    #在exe中程序会直接关闭,留下康康 
     os.system("pause")
