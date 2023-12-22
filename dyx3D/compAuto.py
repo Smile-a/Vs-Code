@@ -103,6 +103,3 @@ if(__name__=="__main__"):
     print("自动化结束，关闭连接")
     sftp.close()
     ssh.close()
-    
-    os.system("pause")
-    input()
