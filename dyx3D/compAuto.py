@@ -4,6 +4,10 @@ import socket
 import paramiko
 import compAutoConfig
 
+# 打包成exe基础命令就够了，默认会打包成文件夹
+# pyinstaller -i naotou.ico compAuto.py
+# -D 默认文件夹  -W 单个文件 -c 默认黑框框  -w 隐藏黑框框
+
 #3d可视化到开发环境打包
 if(__name__=="__main__"):
     #多此一举的操作
