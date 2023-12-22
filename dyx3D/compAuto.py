@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import paramiko
+import compAutoConfig
 
 
 #是否上传开关
@@ -38,6 +39,8 @@ if(__name__=="__main__"):
     #多此一举的操作
     pyFilePath = sys.path[0]
     print("程序路径:",pyFilePath)
+    print("【淡雅香3D可视化项目公司环境自动打包脚本】")
+    print("可能会较慢，因为是从本地上传的奥~")
     
     #如果有想法的话可以自己改造，通过命令行输入的参数来启动对应的模块
     # @echo off  
