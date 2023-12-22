@@ -104,3 +104,4 @@ if(__name__=="__main__"):
     ssh.close()
     
     os.system("pause")
+    input("Press Enter to exit...")
