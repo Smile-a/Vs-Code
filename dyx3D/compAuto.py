@@ -51,19 +51,19 @@ if(__name__=="__main__"):
     
     #切换目录,打包前台项目
     print("开始更新前台项目...")
-    os.chdir(frontendDirPath)
+    os.chdir(compAutoConfig.frontendDirPath)
     os.system("svn update")
     print("前台项目svn更新完毕...")
     
     print("开始打包前台项目...")
-    os.chdir(frontendBuildPath)
-    os.system(frontendBatName)
+    os.chdir(compAutoConfig.frontendBuildPath)
+    os.system(compAutoConfig.frontendBatName)
     print("前台项目打包完成！")
     
     #切换目录,打包后台项目
     print("开始打包后台项目...")
-    os.chdir(jarPackBuildPath)
-    os.system(jarBatCompName)
+    os.chdir(compAutoConfig.jarPackBuildPath)
+    os.system(compAutoConfig.jarBatCompName)
     print("后台项目打包完成!")
     
     #切换回来
@@ -72,54 +72,54 @@ if(__name__=="__main__"):
     
     # 创建一个套接字对象，连接到远程服务器  
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-    sock.connect((ipAddr, 22))  
+    sock.connect((compAutoConfig.ipAddr, 22))  
     
     # 创建SSHClient对象，并设置连接参数  
     ssh = paramiko.SSHClient()  
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  
     
     # 连接服务器  
-    ssh.connect(hostname=ipAddr, username=userName, password=password, sock=sock) 
+    ssh.connect(hostname=compAutoConfig.ipAddr, username=compAutoConfig.userName, password=compAutoConfig.password, sock=sock) 
     
     # 创建SFTPClient对象，并传入SSH连接  
     sftp = paramiko.SFTPClient.from_transport(ssh.get_transport())  
     
-    if isFrontend:
+    if compAutoConfig.isFrontend:
         #上传文件
         print("链接服务器成功，开始上传dist-pc.zip,请等待...")
-        result = sftp.put(frontendPath, FrontendlinuxPath)
+        result = sftp.put(compAutoConfig.frontendPath, compAutoConfig.FrontendlinuxPath)
         if result:
             print("前端zip上传成功!")
             #执行命令
-            stdin, stdout, stderr = ssh.exec_command(cdStr + ' unzip -o dist-pc.zip')
+            stdin, stdout, stderr = ssh.exec_command(compAutoConfig.cdStr + ' unzip -o dist-pc.zip')
             print(stdout.read().decode())
         else:
             print("前端上传失败!")
     
-    if isSystem:
+    if compAutoConfig.isSystem:
         #上传文件
         print("链接服务器成功，开始上传system.jar,请等待...")
-        result = sftp.put(systemJarPath, SystemlinuxPath)
+        result = sftp.put(compAutoConfig.systemJarPath, compAutoConfig.SystemlinuxPath)
         if result:
             print("system上传成功!")
             #执行命令
-            pwdi,pwdo,pwde = ssh.exec_command(cdStr + ' pwd')
+            pwdi,pwdo,pwde = ssh.exec_command(compAutoConfig.cdStr + ' pwd')
             print(pwdo.read().decode())
-            stdin, stdout, stderr = ssh.exec_command(cdStr + ' sh deploy-dyxvisual.sh system_start')
+            stdin, stdout, stderr = ssh.exec_command(compAutoConfig.cdStr + ' sh deploy-dyxvisual.sh system_start')
             print(stdout.read().decode())
         else:
             print("system上传失败!")
     
-    if isKanban:
+    if compAutoConfig.isKanban:
         #上传文件
         print("链接服务器成功，开始上传kanban.jar,请等待...")
-        result = sftp.put(kanbanJarPath, KanbanlinuxPath)
+        result = sftp.put(compAutoConfig.kanbanJarPath, compAutoConfig.KanbanlinuxPath)
         if result:
             print("kanban上传成功!")
             #执行命令.好坑!就是execute_command() 他是a single session，每次执行完后都要回到缺省目录。所以可以 .execute_command('cd  /var; pwd')
-            pwdi,pwdo,pwde = ssh.exec_command(cdStr + ' pwd')
+            pwdi,pwdo,pwde = ssh.exec_command(compAutoConfig.cdStr + ' pwd')
             print(pwdo.read().decode())
-            stdin, stdout, stderr = ssh.exec_command(cdStr + ' sh deploy-dyxvisual.sh kanban_start')
+            stdin, stdout, stderr = ssh.exec_command(compAutoConfig.cdStr + ' sh deploy-dyxvisual.sh kanban_start')
             print(stdout.read().decode())
         else:
             print("kanban上传失败!")
