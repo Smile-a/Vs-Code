@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import paramiko
+import msvcrt
 import compAutoConfig
 
 # 打包成exe基础命令就够了，默认会打包成文件夹
@@ -98,8 +99,9 @@ if(__name__=="__main__"):
         else:
             print("kanban上传失败!")
             
+    os.system("pause")
+    
     # 关闭连接  
     print("自动化结束，关闭连接")
     sftp.close()  
     ssh.close()
-    os.system('pause')
