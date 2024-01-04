@@ -39,24 +39,19 @@ if(__name__=="__main__"):
         os.chdir(jsonFileData['frontendDirPath'])
         os.system("svn update")
         print("前台项目svn更新完毕...")
+        
+        print("开始打包前台项目...")
+        os.chdir(jsonFileData['frontendBuildPath'])
+        os.system(jsonFileData['frontendBatName'])
+        print("前台项目打包完成！")
     
     #判断是否打包后台
     if jsonFileData['isSystem'] or jsonFileData['isKanban']:
+        #切换目录,打包后台项目
         print("开始打包后台项目...")
         os.chdir(jsonFileData['jarPackBuildPath'])
         os.system(jsonFileData['jarBatCompName'])
         print("后台项目打包完成!")
-    
-    # print("开始打包前台项目...")
-    # os.chdir(jsonFileData['frontendBuildPath'])
-    # os.system(jsonFileData['frontendBatName'])
-    # print("前台项目打包完成！")
-    
-    #切换目录,打包后台项目
-    # print("开始打包后台项目...")
-    # os.chdir(jsonFileData['jarPackBuildPath'])
-    # os.system(jsonFileData['jarBatCompName'])
-    # print("后台项目打包完成!")
     
     #切换回来--py文件没问题，exe打包成单独文件就不可以看了，因为是zip
     os.chdir(pyFilePath)
