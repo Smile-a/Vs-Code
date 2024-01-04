@@ -1,7 +1,7 @@
 {
-    "isFrontend": true,
-    "isSystem": true,
-    "isKanban": true,
+    "isFrontend": false,
+    "isSystem": false,
+    "isKanban": false,
     "ipAddr": "192.168.42.127",
     "userName": "root",
     "password": "whlinux",
