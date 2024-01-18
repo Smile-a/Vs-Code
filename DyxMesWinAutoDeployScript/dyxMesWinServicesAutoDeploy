@@ -204,6 +204,11 @@ def getHtmlValue():
 #前台项目打包自动化
 def frontendPackageAuto():
     print("前台自动化开始")
+    #先切换到前台项目的根路径
+    os.chdir(dyxServerConfig.frontendProPath)
+    #然后更新一下前台代码
+    os.system("svn update")
+    
     #咋还非要切到那个路径才行呢 烦死了
     os.chdir(dyxServerConfig.frontendPath)
     #执行打包脚本
@@ -291,6 +296,8 @@ def mavenPack():
     mvn_install = "mvn clean install -P " + dyxServerConfig.maven_Profile
     #切换到父目录
     os.chdir(dyxServerConfig.jarFilesPath)
+    #忘了一步，在这里svn更新一下最新的代码
+    os.system("svn update")
     #这里会慢，更新一下所有的依赖，免得跑不起来==
     os.system("mvn clean -U")
     #还是先切换到commapi和mobile俩install一下再说吧，不然有时候他们更新了接口的

@@ -13,6 +13,8 @@ bljAllListPathUrl = "https://10.157.234.151/index.php/UserWork/index/type/all/cp
 winsctTitle = "@10.157.234.151 – WinSCP"
 #Xshell软件窗口标题
 xshellTitle = 'root@kjymessjzjjtest:~ - Xshell'
+#前台页面项目总路径
+frontendProPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\"
 #前台页面打包脚本
 frontendBuildPath = "C:\\Users\\wsd\\eclipse-workspace\\dyxmesProject\\hbtobacco-dyxmes-frontend\\build\\build.bat"
 #前台页面打包好的存放路径
