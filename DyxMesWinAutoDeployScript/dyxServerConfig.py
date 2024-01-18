@@ -49,9 +49,9 @@ frontendTitleKey = "test_10_156_53_58"
 testOneTitleKey = "test_10_156_53_59"
 testTwoTitleKey = "test_10_156_53_60"
 #做个发布开关吧
-isFrontend=False
-isSystem=False
-isPlan=False
-isBase=False
-isQuality=False
-isWarehouse=False
+isFrontend=True
+isSystem=True
+isPlan=True
+isBase=True
+isQuality=True
+isWarehouse=True
