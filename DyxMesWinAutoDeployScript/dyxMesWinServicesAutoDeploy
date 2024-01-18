@@ -276,16 +276,22 @@ def javaJarPackageAuto():
     #打包成功了，准备上传吧,原来还想着做个开关，指定替换，我都自动了，我直接全换了不就ok了吗  
     #60的
     #base
-    jarUp(dyxServerConfig.jar_base,dyxServerConfig.jar_base_Name,"base_start",dyxServerConfig.testTwoTitleKey)
+    if(dyxServerConfig.isBase):
+        jarUp(dyxServerConfig.jar_base,dyxServerConfig.jar_base_Name,"base_start",dyxServerConfig.testTwoTitleKey)
     #quality
-    jarUp(dyxServerConfig.jar_quality,dyxServerConfig.jar_quality_Name,"quality_start",dyxServerConfig.testTwoTitleKey)
+    if(dyxServerConfig.isQuality):
+        jarUp(dyxServerConfig.jar_quality,dyxServerConfig.jar_quality_Name,"quality_start",dyxServerConfig.testTwoTitleKey)
     #warehouse
-    jarUp(dyxServerConfig.jar_warehouse,dyxServerConfig.jar_warehouse_Name,"warehouse_start",dyxServerConfig.testTwoTitleKey)
+    if(dyxServerConfig.isWarehouse):
+        jarUp(dyxServerConfig.jar_warehouse,dyxServerConfig.jar_warehouse_Name,"warehouse_start",dyxServerConfig.testTwoTitleKey)
     #59的
     #plan
-    jarUp(dyxServerConfig.jar_plan,dyxServerConfig.jar_plan_Name,"plan_start",dyxServerConfig.testOneTitleKey)
+    if(dyxServerConfig.isPlan):
+        jarUp(dyxServerConfig.jar_plan,dyxServerConfig.jar_plan_Name,"plan_start",dyxServerConfig.testOneTitleKey)
     #system
-    jarUp(dyxServerConfig.jar_system,dyxServerConfig.jar_system_Name,"system_start",dyxServerConfig.testOneTitleKey)
+    if(dyxServerConfig.isSystem):
+        jarUp(dyxServerConfig.jar_system,dyxServerConfig.jar_system_Name,"system_start",dyxServerConfig.testOneTitleKey)
+    
     print("jar包自动化结束")
 
 
@@ -666,11 +672,15 @@ if __name__=='__main__':
     chrome.get(allList)
     sleep(1)
 
-    #调用前台打包方法
-    frontendPackageAuto()
+    #判断前台打包开关
+    if(dyxServerConfig.isFrontend):
+        #调用前台打包方法
+        frontendPackageAuto()
     sleep(1)
-    #调用后台打包方法
-    javaJarPackageAuto()
+    #判断后台打包开关 如果全都是false的话就不进去了，有时候会自己选择部署哪个模块
+    if(dyxServerConfig.isSystem or dyxServerConfig.isPlan or dyxServerConfig.isBase or dyxServerConfig.isQuality or dyxServerConfig.isWarehouse):
+        #调用后台打包方法
+        javaJarPackageAuto()
     sleep(1)
     #关闭浏览器
     chrome.quit()
