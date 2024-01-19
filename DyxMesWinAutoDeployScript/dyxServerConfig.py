@@ -50,7 +50,7 @@ testOneTitleKey = "test_10_156_53_59"
 testTwoTitleKey = "test_10_156_53_60"
 #做个发布开关吧
 isFrontend=False
-isSystem=True
+isSystem=False
 isPlan=False
 isBase=False
 isQuality=False
