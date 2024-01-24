@@ -53,5 +53,5 @@ isFrontend=False
 isSystem=False
 isPlan=False
 isBase=False
-isQuality=False
+isQuality=True
 isWarehouse=False
