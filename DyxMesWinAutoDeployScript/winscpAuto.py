@@ -18,8 +18,9 @@ from pywinauto import mouse
 from pyautogui import scroll
 from PIL import Image
 
-
-def main():
+#filePath=文件全路径
+#fileName=文件单独名称
+def main(filePath,fileName):
     #好坑，这个地方进来没有等待，winscp的窗口都没加载好，自然找不到。。。
     sleep(5)
     # 设置自动化操作时间间隔
@@ -46,19 +47,21 @@ def main():
     #window.maximize()
     #快捷键打开本地目录，就是你的jar包文件夹，好上传文件到服务器
     sleep(0.5)
+    #记录一下，好像是这样，默认打开文件/目录快捷键，但是你不要手欠自己点过远程目录的那个奥，不然好像会打开远程目录，就会找不到文件，不理会这条即可
     pyautogui.hotkey('ctrl', 'o')
     #打开就会自己选中，把路径直接放进去
     #把变量值复制到剪贴板
     #jarpath = dyxServerConfig.jarFilesPath
-    jarpath = dyxServerConfig.frontendPath
-    pyperclip.copy(jarpath)
+    #jarpath = dyxServerConfig.frontendPath
+    pyperclip.copy(filePath)
     #这个时候光标还是在路径栏，直接粘贴就ok了
     sleep(1)
     pyautogui.hotkey('ctrl', 'v')
     #模拟回车，确认
     pyautogui.hotkey('enter')
     #最好先去判断一下文件是否存在
-    upFile = dyxServerConfig.frontendPath + dyxServerConfig.frontendZipName
+    #upFile = dyxServerConfig.frontendPath + dyxServerConfig.frontendZipName
+    upFile = filePath + fileName
     print("上传文件路径:",upFile)
     if(os.path.exists(upFile)):
         print("文件存在")
@@ -68,21 +71,22 @@ def main():
         fileNullErrTk.withdraw()
         fileNullErrTk.after(3000, fileNullErrTk.destroy)
         messagebox.showerror("错误", "打包上传文件不存在，请检查!")
-        sys.exit()
+        return
     #获取焦点
     window.set_focus()
     #选择文件
     pyautogui.hotkey('alt','m')
     pyautogui.hotkey('down')
     pyautogui.hotkey('enter')
-    fronZip = dyxServerConfig.frontendZipName
-    pyperclip.copy(fronZip)
+    #fronZip = dyxServerConfig.frontendZipName
+    #复制一下要打包的文件名称，因为要定位它
+    pyperclip.copy(fileName)
     sleep(1)
     pyautogui.hotkey('ctrl', 'v')
     pyautogui.hotkey('enter')
     #f5上传，f6上传并且删除
     pyautogui.hotkey('f6')
-    #最后一个发送enter
+    #最后一个发送enter,然后就开始了上传,好像有些框是可以选中以后都不弹窗，这个可以自己调整是否要回车
     pyautogui.hotkey('enter')
     
     #最新的问题，我好像没有办法在这个窗口等待他是不是上传完毕了，有一个进度条但是我无法获取到~
@@ -96,6 +100,7 @@ def main():
             print("文件存在,上传还未完成，请等待！")
         else:
             print("文件不存在了，上传成功了！!!")
+            window.set_focus()
             #上传成功后关闭窗口 用window.close()会有问题，很怪
             pyautogui.hotkey('alt', 'f4')
             #确认关闭 你要是打勾了应该没问题了
