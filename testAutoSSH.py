@@ -4,7 +4,7 @@ import paramiko
 
 ipAddr = "192.168.42.127"
 userName = "root"
-password = "whlinux"
+password = "root"
 isFont = True
 isSystem = True
 isKanban = True
