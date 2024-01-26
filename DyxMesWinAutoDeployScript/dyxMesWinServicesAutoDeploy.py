@@ -561,7 +561,7 @@ if __name__=='__main__':
     #加载谷歌浏览器驱动
     chrome = webdriver.Chrome(options=options)
     #设置浏览器窗口最大化
-    chrome.maximize_window()
+    #chrome.maximize_window()
     try:  
         #登陆堡垒机
         chrome.get(dyxServerConfig.bljLoginPathUrl)
