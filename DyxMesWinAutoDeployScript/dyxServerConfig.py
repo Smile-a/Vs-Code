@@ -51,7 +51,7 @@ testTwoTitleKey = "test_10_156_53_60"
 #做个发布开关吧
 isFrontend=False
 isSystem=False
-isPlan=True
+isPlan=False
 isBase=False
 isQuality=False
-isWarehouse=False
+isWarehouse=True
