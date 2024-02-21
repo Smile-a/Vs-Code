@@ -6,7 +6,6 @@ import pyautogui
 import pyperclip
 import tkinter as tk
 import requests
-import dyxServerConfig
 
 from tkinter import messagebox
 from selenium import webdriver
@@ -18,7 +17,12 @@ from pyautogui import scroll
 from PIL import Image
 from urllib.request import urlopen
 
-
+# 获取当前脚本所在的目录
+script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+print('script_dir:'+script_dir)
+# 将dyxServerConfig.py所在的路径加入到sys.path中,而且是最前面，优先在这个目录下找
+sys.path.insert(0,script_dir)
+import dyxServerConfig
 
 #获取企业微信消息通知里面的最新的登录验证码
 def getYzmCode():
@@ -562,7 +566,7 @@ if __name__=='__main__':
     #加载谷歌浏览器驱动
     chrome = webdriver.Chrome(options=options)
     #设置浏览器窗口最大化
-    chrome.maximize_window()
+    #chrome.maximize_window()
     try:  
         #登陆堡垒机
         chrome.get(dyxServerConfig.bljLoginPathUrl)
@@ -674,6 +678,7 @@ if __name__=='__main__':
     sleep(1)
 
     #判断前台打包开关
+    print(dyxServerConfig.isFrontend)
     if(dyxServerConfig.isFrontend):
         #调用前台打包方法
         frontendPackageAuto()
