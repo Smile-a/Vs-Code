@@ -34,7 +34,7 @@ def puttyAuto():
     except Exception as e:
         print("执行putty自动化时发生异常,请检查: {}".format(e))
     finally:  
-        if not puttyOK:
+        if puttyOK:
             try:
                 window.close()
             except Exception:
