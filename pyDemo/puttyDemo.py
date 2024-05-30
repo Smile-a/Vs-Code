@@ -25,12 +25,16 @@ def puttyAuto():
             # 输入"ll"命令并按下回车
             window.type_keys("ll{ENTER}")
             # 等待一会以确保命令执行完毕
-            time.sleep(0.5)
+            time.sleep(1)
+            #空格会不识别，需要转换为{SPACE}
+            Shell = "pwd ; ll"
+            Shell = Shell.replace(" ", "{SPACE}")
+            window.type_keys(Shell + "{ENTER}")
             puttyOK = True
     except Exception as e:
         print("执行putty自动化时发生异常,请检查: {}".format(e))
     finally:  
-        if puttyOK:
+        if not puttyOK:
             try:
                 window.close()
             except Exception:
