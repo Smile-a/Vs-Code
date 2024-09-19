@@ -9,10 +9,14 @@ from pyautogui import scroll
 
 #获取企业微信消息通知里面的最新的登录验证码
 def getYzmCode():
+    title = '企业微信'
+    sleep(1)
     #打开企业微信应用
-    app = Application(backend='uia').start(wxWorkPath)
+    app = Application(backend='uia').start('C:\\Program Files (x86)\\WXWork\\WXWork.exe')
+    sleep(1)
     #链接到企业微信
     app = Application(backend='uia').connect(title=title)
+    sleep(1)
     #选中企业微信窗口
     wind_calc = app[title]
     #获取这个窗口的焦点？
@@ -33,11 +37,12 @@ def getYzmCode():
     #这里可以还有一步，先选择左下角 我的企业，然后选中烟的不然有时候公司的消息，你就找不到验证码了,但是，，提醒一下就ok
 
     #选中消息 偶然发现的，如果直接单击会有问题，你要是来了一条消息，你单机，他就是第一条，置顶的消息通知都会被顶走
-    pyautogui.moveTo((l_coordinate + 28), (t_coordinate + 88))
+    pyautogui.moveTo((l_coordinate)+31, (t_coordinate)+106)
     #当前鼠标在消息图标上，挪动到消息通知上面，暂时简单做法就是制定消息通知，让鼠标点过去，高级点就先点搜索框就有点麻烦了
     #直接挪动到消息通知聊天栏然后双击打开,有时候会出问题，你说不定在最后一行 还没回到顶上呢
     #先移动
-    pyautogui.moveTo((l_coordinate + 90), (t_coordinate + 129))
+    pyautogui.moveTo((l_coordinate)+124, (t_coordinate)+160)
+    #pyautogui.moveTo(84, 114)
     #先轻轻单击一下，让他好翻页
     pyautogui.click()
     #要等一下，免得双击了，必须这样才能触发pageup
@@ -64,11 +69,12 @@ def getYzmCode():
     print("当前屏幕尺寸:",width, height)
     #把鼠标定位到消息通知弹窗的那个聊天记录的log上面，那个是定位点，很赞
     #先移动
-    pyautogui.moveTo((wind_msg_left + 230), (wind_msg_top + 391))
+    pyautogui.moveTo((wind_msg_left)+287, (wind_msg_top)+482)
+    #pyautogui.moveTo(287, 482)
     #不出意外的话，现在鼠标就在聊天记录按钮上了，这就是他的坐标
     log_x,log_y = pyautogui.position()
     #然后从这个坐标，挪动到最新一条的验证码的那个位置，是可以双击自动选中6位数验证码的那个位置才行
-    pyautogui.moveTo((log_x + 14), (log_y - 65))
+    pyautogui.moveTo((log_x+5), (log_y - 81))
     #这里一个双击不是为了拿验证码，有可能不是最新的消息，为了让他可以翻页而已
     pyautogui.doubleClick()
     #这时候双击就可以直接复制验证码了， 但是为了以防万一，滚动一下这个框最安全
@@ -76,7 +82,7 @@ def getYzmCode():
         # 模拟按下 Page Down 键，就是最新的验证码,虽然一进来默认就是最新
         pyautogui.press('pagedown')
     #双击获取验证码
-    mouse.double_click(coords=((log_x + 14), (log_y - 65)))
+    mouse.double_click(coords=((log_x + 5), (log_y - 81)))
     #到这，就获取到了企业微信聊天框里面验证码了
     pyautogui.hotkey('ctrl', 'c')
     print("获取到最新的验证码为:",pyperclip.paste())
@@ -92,15 +98,9 @@ def getYzmCode():
     return yzm
 
 
-#企业微信地址
-wxWorkPath = 'C:\Program Files (x86)\WXWork\WXWork.exe'
-title = '企业微信'
-# 设置自动化操作时间间隔
-pyautogui.PAUSE = 0.5
-
-
-
 #启动！
 if __name__=='__main__':
+    # 设置自动化操作时间间隔
+    pyautogui.PAUSE = 0.5
     yzm = getYzmCode()
     print(yzm)
