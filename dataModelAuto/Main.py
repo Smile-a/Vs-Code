@@ -4,6 +4,7 @@ import xlrd
 from time import sleep,time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -31,27 +32,25 @@ if(__name__=="__main__"):
     wait = WebDriverWait(chrome, 10)
     
     # 1.选中左侧菜单 数据模型管理
-    # sjmxwh = chrome.find_element(By.XPATH, '//*[@id="menu_scrollbar"]/li[4]/a')
     print("选中左侧菜单 数据模型管理")
     # 获取id 为 menu_scrollbar 的元素
     sjmxwh = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="menu_scrollbar"]')))
-    sjmxwh.click()
-    
-    # 获取子菜单项
-    # sub_elements = sjmxwh.find_elements(By.XPATH, './*')
-    # # 打印子元素信息
-    # for sub_element in sub_elements:
-    #     print(f"Tag name: {sub_element.tag_name}")
-    #     print(f"Text: {sub_element.text}")
-    #     print(f"Attributes: {sub_element.get_attribute('outerHTML')}\n")
-
     # 直接获取【数据模型维护】的a标签 直接触发效果
-    submenu_item = wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel"]')))
+    #submenu_item = wait.until(EC.presence_of_element_located((By.XPATH, '//a[@href="https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel"]')))
     # 点击子菜单项
-    submenu_item.click()
-    # 等待页面加载完成
-    wait.until(EC.title_contains('数据模型维护'))
+    #submenu_item.click()
+    # 页面右侧数据更新等待
+    sleep(3)
     print("成功进入数据模型维护页面")
+    
+    # 安全起见 直接输入关键字定位数据模型列表
+    input_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='输入关键字进行过滤']")))
+    # 输入文本值  云MES系统    回车触发搜索
+    input_field.send_keys("云MES系统")
+    input_field.send_keys(Keys.RETURN)
+    sleep(3)
+    
+    # 到这里初始工作就结束了，后面就是循环里面处理各个表的数据了
 
     # 打开excel文件
     workbook = xlrd.open_workbook(xlsPath)
@@ -73,6 +72,45 @@ if(__name__=="__main__"):
         mxCode = sheetName[0]
         # 模型中文名称
         modelChineseName = sheetName[1]
+        
+        #拿到了数据模型表名和模型中文名称 直接操作浏览器搜索模型
+        input_fields = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//input[@placeholder='请输入内容']")))
+        # 分两次查询 有时候code可以匹配，有的时候 中文可以匹配
+        input_fields[0].send_keys(mxCode)
+        #后面code查不到的时候在用名称查一遍
+        #input_fields[1].send_keys(modelChineseName)
+        
+        # 直接点击查询按钮
+        col_elements = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".el-col.el-col-24")))
+        # 获取第四个 .el-col el-col-24 元素   就是重置 查询那个div
+        fourth_col_element = col_elements[3]
+        # 找到该元素中的所有 button 元素
+        button_elements = fourth_col_element.find_elements(By.CSS_SELECTOR, "button")
+        # 遍历所有 button 元素，找到 span 为“查询”的按钮并点击
+        for button in button_elements:
+            span_elements = button.find_elements(By.CSS_SELECTOR, "span")
+            if len(span_elements) > 0 and span_elements[0].text == "查询":
+                button.click()
+                print("点击了带有文本 '查询' 的按钮")
+                break
+        # 不出意外 一般是 成功了
+        # 通过当前页面唯一class定位到数据表格grid el-table el-table--fit el-table--striped el-table--border el-table--scrollable-x el-table--scrollable-y el-table--enable-row-transition el-table--small
+        grid_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".el-table.el-table--fit.el-table--striped.el-table--border.el-table--scrollable-x.el-table--scrollable-y.el-table--enable-row-transition.el-table--small")))
+        # grid_element元素下的class定位到table el-table__body-wrapper is-scrolling-left
+        table_element = grid_element.find_element(By.CSS_SELECTOR, ".el-table__body-wrapper.is-scrolling-left")
+        # 准确的说是装table的div，继续获取里面的<tbody>元素，这才是存放<tr><td>的元素
+        tbody_element = table_element.find_element(By.TAG_NAME, "tbody")
+        print("表格元素定位成功,共有%d行数据" ,tbody_element.find_elements(By.TAG_NAME, "tr").__len__())
+        # 按理就只有一条数据，因为就一个数据模板，所以默认取第一个吧
+        tr_element = tbody_element.find_element(By.TAG_NAME, "tr")
+        # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
+        edit_button = tr_element.find_element(By.CSS_SELECTOR, ".el-table_1_column_10.is-center.is-hidden.el-table__cell")
+        # 获取元素里面的第一个a标签，那就是编辑按钮,第二个a标签是删除按钮
+        editAbtn = edit_button.find_element(By.TAG_NAME, "a")
+        editAbtn.click()
+       
+        #这时候就要弹出模态框了，进行编辑，把excel的对应数据填写到表单中即可。
+        
         # 数据库表名
         tableName = ""
         # 数据库名
