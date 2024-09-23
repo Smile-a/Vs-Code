@@ -136,8 +136,8 @@ if(__name__=="__main__"):
                 trRows = queryTrRows
             else:
                 print("没有找到表名为\t"+mxCode+"\t 模型中文名称为\t"+modelChineseName+"\t的数据，请检查数据模型名称是否正确！")
-                print("程序退出！")
-                exit()
+                # 跳过
+                continue
         # 按理就只有一条数据，因为就一个数据模板，所以默认取第一个吧
         tr_element = trRows[0]
         # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
@@ -167,8 +167,8 @@ if(__name__=="__main__"):
         input_elements = main_div.find_elements(By.CLASS_NAME, "el-input__inner")
         print("一共有%d个输入框" % input_elements.__len__())
         # 输出所有输入框的name和value
-        for input_element in input_elements:
-            print(input_element.get_attribute("name"), input_element.get_attribute("value"))
+        # for input_element in input_elements:
+        #     print(input_element.get_attribute("name"), input_element.get_attribute("value"))
         #数据模型标准名称
         input_elements[2].clear()
         input_elements[2].send_keys(mxCode)
@@ -196,6 +196,8 @@ if(__name__=="__main__"):
             # 跳过 第一行
             if row == 0:
                 continue
+            # 暂停1秒
+            sleep(1)
             row_values = sheet.row_values(row)
             print(row_values)
             # 字段名 统一转为大写
@@ -211,14 +213,6 @@ if(__name__=="__main__"):
             xsws = row_values[4]
             # 能否为NULL   YES NO
             nfwn = row_values[5]
-            # 修改yes no  为 true false
-            if nfwn == "YES":
-                # 允许为空 改为 false 页面控件就不点亮
-                nfwn = "false"
-            else:
-                # 不允许为空 改为 true 页面控件就点亮
-                nfwn = "true"
-            isNull = nfwn
             # 字段说明
             zdsm = row_values[6]
             # 代码类别
@@ -244,17 +238,46 @@ if(__name__=="__main__"):
             # 开始给对应的输入框赋值 第一个输入框是 源字段名
             input_elements[0].send_keys(zdm)
             # 第二个输入框是 字段中文名
+            if zdsm == "":
+                zdsm = zdm
+                if "DOMAINCOL" == zdm:
+                    zdsm = "域"
             input_elements[1].send_keys(zdsm)
             # 第四个输入框是 字段类型 比如是varchar int date datetime decimal 全部改成首字母大写
             zdlx = zdlx.capitalize()
-            input_elements[3].send_keys(zdlx)
-            # 第五个输入框是 字段长度
-            input_elements[4].send_keys(zdcd)
-            # 第六个输入框是 小数位 如果zdlx是decimal 才需要设置
+            # 重新拼接zdlx 带中文组装
             if zdlx == "Decimal":
+                zdlx = "高精小数(Decimal)"
+            elif zdlx == "Date":
+                zdlx = "时间(Time)"
+            elif zdlx == "Decimal":
+                zdlx = "高精小数(Decimal)"
+            elif zdlx == "Int":
+                zdlx = "整数(Integer)"
+            elif zdlx == "Varchar":
+                zdlx = "变长字符(Varchar)"
+            # 不太对，字段类型 input是一个下拉框，直接输入值好像不能成功，要如何操作?
+            input_elements[3].send_keys(zdlx)
+            # 直接这样是不行的，鼠标移动就丢失值，需要 键盘下然后加上回车 就可以了
+            input_elements[3].send_keys(Keys.DOWN, Keys.ENTER)
+            # 第五个输入框是 字段长度
+            if zdcd != 'null':
+                input_elements[4].send_keys(zdcd)
+            # 第六个输入框是 小数位 如果zdlx是decimal 才需要设置
+            if zdlx == "高精小数(Decimal)":
+                # 字段长度一般只有在字段类型是varchar的时候才有用  数字类型一般就是null，那么就改获取数字长度
+                input_elements[4].send_keys(szcd)
                 input_elements[5].send_keys(xsws)
-            # 第九个是 能否为NULL
-            input_elements[8].send_keys(isNull)
+            elif zdlx == "整数(Integer)":
+                input_elements[4].send_keys(szcd)
+            # 第九个是 能否为NULL 默认是不限制非空的 
+            if nfwn == "NO":
+                # excel中为NO 表示不允许为空，单击非空约束控件即可 启用
+                fkysInput = input_elements[8]
+                sleep(2)
+                print(fkysInput.is_enabled())
+                # 使用 JavaScript 执行点击
+                chrome.execute_script("arguments[0].click();", fkysInput)
             
             #获取里面 class="drawerBtn" 元素里面的 button  这是保存按钮
             drawerBtnDiv = drawerAddForm.find_element(By.CLASS_NAME, "drawerBtn")
@@ -263,11 +286,15 @@ if(__name__=="__main__"):
             
             # 检测页面是否有弹出提示 role="alert" 的元素
             alert_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[role='alert']")))
-            alert_text = alert_element.text
-            #判断是不是 源字段名已存在，请修改！
-            if "源字段名已存在，请修改！" in alert_text:
+            # 提示框里面的p标签 class=el-message__content 的text
+            alert_P = alert_element.find_element(By.CLASS_NAME, "el-message__content")
+            alert_text = alert_P.text
+            #判断不为空的话 就打印出来
+            if alert_text != "":
+                print(alert_text)
                 # 获取关闭按钮
                 sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
+                sleep(2)
                 sdxgzdCloseBtn.click()
                 #可以换下一个字段了
                 continue
@@ -276,11 +303,10 @@ if(__name__=="__main__"):
         zcSave_button.click()
         #之后就可以关闭弹窗了，定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
         close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
+        sleep(2)
         close_button.click()
         
         # 打印分割线
         print("==================================================================================================================")
-        # 循环一次就结束
-        break
 
 
