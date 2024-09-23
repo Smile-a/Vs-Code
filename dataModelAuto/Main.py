@@ -157,6 +157,10 @@ if(__name__=="__main__"):
         # 从section中获取各个对应的输入框即可。
         # 先获取 class="dam_imm-info_model_edit"的div 这是大编辑form
         edit_div = section_element.find_element(By.CLASS_NAME, "dam_imm-info_model_edit")
+        # 获取和mt-8同级的div class="drawerBtn" 这是暂存按钮的div容器，里面有个button才是真的暂存按钮
+        drawerBtn_div = edit_div.find_element(By.CLASS_NAME, "drawerBtn")
+        # 获取它下面的 button 元素 这是暂存按钮
+        zcSave_button = drawerBtn_div.find_element(By.TAG_NAME, "button")
         # 然后获取它下面的 class="mt-8" div 这是主从表的容器
         main_div = edit_div.find_element(By.CLASS_NAME, "mt-8")
         # 直接获取main_div里面所有包括子元素里面的 class="el-input__inner"
@@ -205,8 +209,15 @@ if(__name__=="__main__"):
             szcd = row_values[3]
             # 小数位数
             xsws = row_values[4]
-            # 能否为NULL
+            # 能否为NULL   YES NO
             nfwn = row_values[5]
+            # 修改yes no  为 true false
+            if nfwn == "YES":
+                # 允许为空 改为 false 页面控件就不点亮
+                nfwn = "false"
+            else:
+                # 不允许为空 改为 true 页面控件就点亮
+                nfwn = "true"
             isNull = nfwn
             # 字段说明
             zdsm = row_values[6]
@@ -217,42 +228,56 @@ if(__name__=="__main__"):
             # 先获取当前模态窗里面 id="pane-column" 的元素 这里面会有手动添加按钮和数据列表
             tabpanel = edit_div.find_element(By.ID, "pane-column")
             
-            # 先获取tabpanel里面的第二个数据表格
-            table = tabpanel.find_elements(By.TAG_NAME, "table")[1]
-
-            # 获取里面的tbody
-            tbody = table.find_element(By.TAG_NAME, "tbody")
-            # 获取里面的所有tr
-            tr_elements = tbody.find_elements(By.TAG_NAME, "tr")
-            # 遍历所有tr
-            for tr_element in tr_elements:
-                # 获取tr里面的所有td
-                td_elements = tr_element.find_elements(By.TAG_NAME, "td")
-                # 先获取第三个td
-                td_element = td_elements[2]
-                # for td_element in td_elements:
-                #     # 获取td里面的所有span
-                #     span_elements = td_element.find_elements(By.TAG_NAME, "span")
-                #     # 遍历所有span
-                #     for span_element in span_elements:
-                #         # 获取span的text
-                #         span_text = span_element.text
-                #         # 判断span_text 是否等于 已经转为大写的zdm 如果有相同的值就跳过，没有就触发 手动添加
-                #         if span_text == zdm:
-                #             print("已经存在相同的字段名,跳过")
-                #             break
-                #         else:
-                #             # 获取tabpanel里面的button 一共有五个，获取第四个"手动添加"按钮
-                #             add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
-                #             add_button.click()
-                        
+            # 获取tabpanel里面的button 一共有五个，获取第四个"手动添加"按钮
+            add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
+            add_button.click()
             
+            #定位弹窗的class="el-drawer__wrapper" 有很多个
+            drawers = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'el-drawer__wrapper')))
+            # 获取最后一个元素 也就是 手动添加的弹窗
+            drawerAddForm = drawers[-1]
             
-        
-        
-        #定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
+            # 开始输入值 获取所有input标签
+            input_elements = drawerAddForm.find_elements(By.TAG_NAME, "input")
+            # 一共是有11个
+            print("一共有%d个input元素" % len(input_elements))
+            # 开始给对应的输入框赋值 第一个输入框是 源字段名
+            input_elements[0].send_keys(zdm)
+            # 第二个输入框是 字段中文名
+            input_elements[1].send_keys(zdsm)
+            # 第四个输入框是 字段类型 比如是varchar int date datetime decimal 全部改成首字母大写
+            zdlx = zdlx.capitalize()
+            input_elements[3].send_keys(zdlx)
+            # 第五个输入框是 字段长度
+            input_elements[4].send_keys(zdcd)
+            # 第六个输入框是 小数位 如果zdlx是decimal 才需要设置
+            if zdlx == "Decimal":
+                input_elements[5].send_keys(xsws)
+            # 第九个是 能否为NULL
+            input_elements[8].send_keys(isNull)
+            
+            #获取里面 class="drawerBtn" 元素里面的 button  这是保存按钮
+            drawerBtnDiv = drawerAddForm.find_element(By.CLASS_NAME, "drawerBtn")
+            saveBtn = drawerBtnDiv.find_element(By.TAG_NAME, "button")
+            saveBtn.click()
+            
+            # 检测页面是否有弹出提示 role="alert" 的元素
+            alert_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[role='alert']")))
+            alert_text = alert_element.text
+            #判断是不是 源字段名已存在，请修改！
+            if "源字段名已存在，请修改！" in alert_text:
+                # 获取关闭按钮
+                sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
+                sdxgzdCloseBtn.click()
+                #可以换下一个字段了
+                continue
+            
+        # 数据模型的字段都修改好了 可以直接点击暂存按钮了
+        zcSave_button.click()
+        #之后就可以关闭弹窗了，定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
         close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
         close_button.click()
+        
         # 打印分割线
         print("==================================================================================================================")
         # 循环一次就结束
