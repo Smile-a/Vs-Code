@@ -87,6 +87,9 @@ if(__name__=="__main__"):
         
         #拿到了数据模型表名和模型中文名称 直接操作浏览器搜索模型
         input_fields = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//input[@placeholder='请输入内容']")))
+        # 忘记了 循环的时候，之前的值没有干掉奥，手动清空
+        input_fields[0].clear()
+        input_fields[1].clear()
         # 分两次查询 有时候code可以匹配，有的时候 中文可以匹配
         input_fields[0].send_keys(mxCode)
         #后面code查不到的时候在用名称查一遍
@@ -165,7 +168,7 @@ if(__name__=="__main__"):
         main_div = edit_div.find_element(By.CLASS_NAME, "mt-8")
         # 直接获取main_div里面所有包括子元素里面的 class="el-input__inner"
         input_elements = main_div.find_elements(By.CLASS_NAME, "el-input__inner")
-        print("一共有%d个输入框" % input_elements.__len__())
+        #print("一共有%d个输入框" % input_elements.__len__())
         # 输出所有输入框的name和value
         # for input_element in input_elements:
         #     print(input_element.get_attribute("name"), input_element.get_attribute("value"))
@@ -223,10 +226,22 @@ if(__name__=="__main__"):
             tabpanel = edit_div.find_element(By.ID, "pane-column")
             
             # 获取tabpanel里面的button 一共有五个，获取第四个"手动添加"按钮
-            add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
-            add_button.click()
+            sleep(1)
+            try:
+                add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
+                add_button.click()
+            except Exception as e:
+                print("获取手动添加按钮失败,重新调用")
+                # 一般都是因为上一个手动编辑的页面框关闭失败导致的，再关闭一次
+                sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
+                sleep(1)
+                sdxgzdCloseBtn.click()
+                #然后再次调用 手动新增 按钮
+                add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
+                add_button.click()
             
             #定位弹窗的class="el-drawer__wrapper" 有很多个
+            sleep(1)
             drawers = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'el-drawer__wrapper')))
             # 获取最后一个元素 也就是 手动添加的弹窗
             drawerAddForm = drawers[-1]
@@ -234,7 +249,7 @@ if(__name__=="__main__"):
             # 开始输入值 获取所有input标签
             input_elements = drawerAddForm.find_elements(By.TAG_NAME, "input")
             # 一共是有11个
-            print("一共有%d个input元素" % len(input_elements))
+            #print("一共有%d个input元素" % len(input_elements))
             # 开始给对应的输入框赋值 第一个输入框是 源字段名
             input_elements[0].send_keys(zdm)
             # 第二个输入框是 字段中文名
@@ -274,7 +289,7 @@ if(__name__=="__main__"):
             if nfwn == "NO":
                 # excel中为NO 表示不允许为空，单击非空约束控件即可 启用
                 fkysInput = input_elements[8]
-                sleep(2)
+                sleep(1)
                 print(fkysInput.is_enabled())
                 # 使用 JavaScript 执行点击
                 chrome.execute_script("arguments[0].click();", fkysInput)
@@ -292,15 +307,29 @@ if(__name__=="__main__"):
             #判断不为空的话 就打印出来
             if alert_text != "":
                 print(alert_text)
-                # 获取关闭按钮
                 sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
-                sleep(2)
-                sdxgzdCloseBtn.click()
+                sleep(1)
+                try:
+                    sdxgzdCloseBtn.click()
+                except Exception as e:
+                    print("获取页面右上角关闭按钮失败,重新调用")
+                    sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
+                    sdxgzdCloseBtn.click()
                 #可以换下一个字段了
                 continue
             
         # 数据模型的字段都修改好了 可以直接点击暂存按钮了
-        zcSave_button.click()
+        try:
+            zcSave_button.click()
+        except Exception as e:
+            print("获取调用暂存按钮失败,重新调用")
+            # 一般都是因为上一个手动编辑的页面框关闭失败导致的，再关闭一次
+            sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
+            sleep(1)
+            sdxgzdCloseBtn.click()
+            #然后再次调用 暂存 按钮
+            zcSave_button.click()
+        
         #之后就可以关闭弹窗了，定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
         close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
         sleep(2)
