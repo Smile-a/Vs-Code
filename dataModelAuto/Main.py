@@ -13,6 +13,30 @@ xlsPath = 'C:\MyProject\Vs-Code\dataModelAuto\云MES系统实体清单-0326.xls'
 checkXmlPath = 'C:\MyProject\Vs-Code\dataModelAuto\数据模型补充分工表.xls'
 dataMbUrl = 'https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel'
 
+# 通过excel文件匹配数据模型的数据库英文名称
+def checkExcel():
+    # 创建一个字典来存储数据
+    data_map = {}
+    # 打开excel文件
+    workbook = xlrd.open_workbook(checkXmlPath)
+    # 获取第一页的sheet页
+    sheet = workbook.sheet_by_index(0)
+    # 打印所有行信息
+    for row in range(sheet.nrows):
+        # 跳过第一行
+        if row == 0:
+            continue
+        # 获取每行的内容
+        row_values = sheet.row_values(row)
+        # 将第一列作为值，第二列作为key
+        value = row_values[0]
+        key = row_values[1]
+        # 存储到字典中
+        data_map[key] = value
+        # 打印每行的内容
+        #print(sheet.row_values(row)[1] + "\t" + sheet.row_values(row)[0])
+    return data_map
+
 # 主函数
 if(__name__=="__main__"):
     pyFilePath = os.getcwd()
@@ -36,6 +60,9 @@ if(__name__=="__main__"):
     sleep(5)
     
     # 到这里初始工作就结束了，后面就是循环里面处理各个表的数据了
+    dataMap = checkExcel()
+    # 打印字典大小
+    print(f"dataMap_size: {len(dataMap)}")
 
     # 打开excel文件
     workbook = xlrd.open_workbook(xlsPath)
@@ -151,16 +178,14 @@ if(__name__=="__main__"):
         input_elements[4].send_keys(modelChineseName)
         
         #数据库英文名称 - 要去checkXmlPath里面匹配一下，然后刷新进去
-        input_elements[8].clear()
-        input_elements[8].send_keys(4)
+        key_to_check = mxCode
+        if key_to_check in dataMap:
+            print(f"{key_to_check} 存在于字典中，对应的值为：{dataMap[key_to_check]}")
+            input_elements[8].clear()
+            input_elements[8].send_keys(dataMap[key_to_check])
+        else:
+            print(f"{key_to_check} 不存在于字典中")
         
-        
-        
-        
-        # 数据库表名
-        tableName = ""
-        # 数据库名
-        tableEnglishName = ""
         # 遍历所有的行  目前已知 每页8列 行数未知
         # 字段名	字段类型	字段长度	数字长度	小数位数	能否为NULL	字段说明	代码类别
         for row in range(sheet.nrows):
@@ -187,12 +212,45 @@ if(__name__=="__main__"):
             zdsm = row_values[6]
             # 代码类别
             dylb = row_values[7]
+            
+            # 这时候已经获取到了当前行里的所有元素，然后依次进行填充
+            # 先获取当前模态窗里面 id="pane-column" 的元素 这里面会有手动添加按钮和数据列表
+            tabpanel = edit_div.find_element(By.ID, "pane-column")
+            
+            # 先获取tabpanel里面的第二个数据表格
+            table = tabpanel.find_elements(By.TAG_NAME, "table")[1]
+
+            # 获取里面的tbody
+            tbody = table.find_element(By.TAG_NAME, "tbody")
+            # 获取里面的所有tr
+            tr_elements = tbody.find_elements(By.TAG_NAME, "tr")
+            # 遍历所有tr
+            for tr_element in tr_elements:
+                # 获取tr里面的所有td
+                td_elements = tr_element.find_elements(By.TAG_NAME, "td")
+                # 先获取第三个td
+                td_element = td_elements[2]
+                # for td_element in td_elements:
+                #     # 获取td里面的所有span
+                #     span_elements = td_element.find_elements(By.TAG_NAME, "span")
+                #     # 遍历所有span
+                #     for span_element in span_elements:
+                #         # 获取span的text
+                #         span_text = span_element.text
+                #         # 判断span_text 是否等于 已经转为大写的zdm 如果有相同的值就跳过，没有就触发 手动添加
+                #         if span_text == zdm:
+                #             print("已经存在相同的字段名,跳过")
+                #             break
+                #         else:
+                #             # 获取tabpanel里面的button 一共有五个，获取第四个"手动添加"按钮
+                #             add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
+                #             add_button.click()
+                        
+            
+            
         
-        # 定位id=el-drawer__title的headle里面有一个button 触发
-        #headleClose_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#el-drawer__title > button")))
-        #headleClose_button.click()
         
-        #定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭
+        #定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
         close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
         close_button.click()
         # 打印分割线
