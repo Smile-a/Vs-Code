@@ -424,7 +424,7 @@ if(__name__=="__main__"):
     while True:
         if num < max_attempts:
             try:
-                print("自动流程启动第" + num + "次")
+                print(f"自动流程启动第{num}次")
                 automationBegins()
                 print("所有任务正常走完了？  程序结束!")
                 break
