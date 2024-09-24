@@ -1,6 +1,8 @@
 import os
 import xlrd
+import redis
 
+from tqdm import tqdm
 from time import sleep,time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -12,6 +14,22 @@ from selenium.webdriver.support import expected_conditions as EC
 xlsPath = 'C:\MyProject\Vs-Code\dataModelAuto\云MES系统实体清单-0326.xls'
 checkXmlPath = 'C:\MyProject\Vs-Code\dataModelAuto\数据模型补充分工表.xls'
 dataMbUrl = 'https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel'
+
+r = redis.Redis(host='localhost', port=6379, db=5) 
+
+def alertMesBox(wait):
+    try:
+        # 检测一下，当前页面有没有弹窗 一个class="el-message-box__btns" 的消息提醒框，如果有，就获取里面的button元素确定
+        messBoxBtn = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'el-message-box__btns')))
+        #判断是否存在 并且文本不为空
+        if messBoxBtn and messBoxBtn.text != "":
+            print("检测到弹窗")
+            # 获取里面的button元素确定
+            messBoxBtn.find_element(By.TAG_NAME, "button").click()
+        else:
+            print("没有检测到弹窗")
+    except Exception as e:
+        print("没有找到弹窗，不予理会~")
 
 # 通过excel文件匹配数据模型的数据库英文名称
 def checkExcel():
@@ -37,8 +55,8 @@ def checkExcel():
         #print(sheet.row_values(row)[1] + "\t" + sheet.row_values(row)[0])
     return data_map
 
-# 主函数
-if(__name__=="__main__"):
+#开始执行自动化功能
+def automationBegins():
     pyFilePath = os.getcwd()
     print("【云MES数据中台-数据模型维护脚本】" + "\t程序路径:" + pyFilePath)
     
@@ -53,7 +71,7 @@ if(__name__=="__main__"):
     chrome.get(dataMbUrl)
     print(chrome.title)
     # 使用显示等待确保元素已经加载完成
-    wait = WebDriverWait(chrome, 10)
+    wait = WebDriverWait(chrome, 2)
     
     print("成功进入数据模型维护页面")
     # 等会
@@ -82,14 +100,23 @@ if(__name__=="__main__"):
         print(sheetName)
         # 模型英文名称
         mxCode = sheetName[0]
+        # 判断这个sheet页模型Code是否已经在redis中
+        if r.exists(mxCode):
+            print("模型"+mxCode+"已经存在，跳过")
+            continue
         # 模型中文名称
         modelChineseName = sheetName[1]
-        
+        # 刷新页面
+        #chrome.refresh()
+        # 再次等待页面加载完毕
+        #wait = WebDriverWait(chrome, 10)
         #拿到了数据模型表名和模型中文名称 直接操作浏览器搜索模型
+        alertMesBox(wait) #弹窗
         input_fields = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//input[@placeholder='请输入内容']")))
         # 忘记了 循环的时候，之前的值没有干掉奥，手动清空
         input_fields[0].clear()
         input_fields[1].clear()
+        alertMesBox(wait) #弹窗
         # 分两次查询 有时候code可以匹配，有的时候 中文可以匹配
         input_fields[0].send_keys(mxCode)
         #后面code查不到的时候在用名称查一遍
@@ -115,6 +142,7 @@ if(__name__=="__main__"):
                 button.click()
                 print("点击了'查询'按钮")
                 break
+        sleep(3)
         # 不出意外一般是成功了,直接定位页面 el-table-body 元素 他们好像是把一个table切成了四个
         table_body = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".el-table__body")))
         # 最后一个就是编辑和删除的按钮框
@@ -123,26 +151,50 @@ if(__name__=="__main__"):
         tbody_element = table_element.find_element(By.TAG_NAME, "tbody")
         trRows = tbody_element.find_elements(By.TAG_NAME, "tr")
         print("表格元素定位成功,共有%d行数据" % len(trRows))
-        # 判断列表是否为空 为空就停止程序
+        # 判断列表是否为空  先只用code匹配一轮，后面再用名称看看，光用名称好像有点问题.
         if len(trRows) == 0:
-            # 那就说明没有找到 mxCode的模型，切换用模型中文名称试一次
-            backBtnClean.click() # 重置页面查询条件
-            input_fields[1].send_keys(modelChineseName) # 输入中文名称
-            query_button.click()
-            # 然后再看看有没有数据模板
-            query_body = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".el-table__body")))
-            query_element = query_body[3]
-            queryBody_element = query_element.find_element(By.TAG_NAME, "tbody")
-            queryTrRows = queryBody_element.find_elements(By.TAG_NAME, "tr")
-            print("表格元素重新定位成功,共有%d行数据" % len(queryTrRows))
-            if len(queryTrRows) > 0:
-                trRows = queryTrRows
-            else:
-                print("没有找到表名为\t"+mxCode+"\t 模型中文名称为\t"+modelChineseName+"\t的数据，请检查数据模型名称是否正确！")
-                # 跳过
-                continue
+            print("没有找到模型："+mxCode)
+            continue
+            # if len(trRows) == 0:
+            #     # 那就说明没有找到 mxCode的模型，切换用模型中文名称试一次
+            #     backBtnClean.click() # 重置页面查询条件
+            #     # 等两秒，重置后会默认查询一次所有数据
+            #     sleep(2)
+            #     input_fields[1].send_keys(modelChineseName) # 输入中文名称
+            #     query_button.click()
+            #     sleep(2)
+            #     # 然后再看看有没有数据模板
+            #     query_body = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".el-table__body")))
+            #     query_element = query_body[3]
+            #     queryBody_element = query_element.find_element(By.TAG_NAME, "tbody")
+            #     queryTrRows = queryBody_element.find_elements(By.TAG_NAME, "tr")
+            #     print("表格元素重新定位成功,共有%d行数据" % len(queryTrRows))
+            #     if len(queryTrRows) > 0:
+            #         trRows = queryTrRows
+            #     else:
+            #         print("没有找到表名为\t"+mxCode+"\t 模型中文名称为\t"+modelChineseName+"\t的数据，请检查数据模型名称是否正确！")
+            #         # 跳过
+            #         continue
+        #在这里等待一下吧，有数据，但是页面没有加载出来导致的？
+        sleep(2)
         # 按理就只有一条数据，因为就一个数据模板，所以默认取第一个吧
-        tr_element = trRows[0]
+        #tr_element = trRows[0]
+        tr_element = None
+        
+        #还是获取结果进行匹配吧，哪怕用code和name一起，它搜索结果还是多个
+        headTable = table_body[2]
+        # 打印headTable所有元素
+        for tr in headTable.find_elements(By.TAG_NAME, "tr"):
+            tds = tr.find_elements(By.TAG_NAME, "td")
+            sjmxybmL = tds[3]
+            if sjmxybmL.text == mxCode:
+                print(sjmxybmL.text)
+                # 记录一个下标
+                tr_element_num = tds[1].text
+                # 就是要编辑这一行 这样就能定位到code搜索结果返回多个数据里最符合的那行数据了
+                tr_element = trRows[int(tr_element_num) - 1] #trRows里面是下标 num存的是序号，所以要减一
+                break
+        
         # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
         # 查看tr_element所有子元素  10个td
         #print(tr_element.find_elements(By.TAG_NAME, "td").__len__())
@@ -152,8 +204,10 @@ if(__name__=="__main__"):
         #print(td_element.find_elements(By.TAG_NAME, "a").__len__())
         # 按理就俩a标签，第一个是编辑，第二个是删除，获取第一个编辑按钮，然后触发
         edit_button = td_element.find_elements(By.TAG_NAME, "a")[0]
+        alertMesBox(wait) # 检测弹出提示框
         edit_button.click()
-       
+        #太快了没加载出来就会报错
+        sleep(2)
         #这时候就要弹出模态框了，进行编辑，把excel的对应数据填写到表单中即可。
         # 获取父级中的 section 元素
         section_element = wait.until(EC.presence_of_element_located((By.TAG_NAME, 'section')))
@@ -173,8 +227,11 @@ if(__name__=="__main__"):
         # for input_element in input_elements:
         #     print(input_element.get_attribute("name"), input_element.get_attribute("value"))
         #数据模型标准名称
-        input_elements[2].clear()
-        input_elements[2].send_keys(mxCode)
+        try:
+            input_elements[2].clear()
+            input_elements[2].send_keys(mxCode)
+        except Exception as e:
+            print("数据模板标准名称不可编辑~")
         
         #数据模型源表名
         input_elements[3].clear()
@@ -195,13 +252,14 @@ if(__name__=="__main__"):
         
         # 遍历所有的行  目前已知 每页8列 行数未知
         # 字段名	字段类型	字段长度	数字长度	小数位数	能否为NULL	字段说明	代码类别
-        for row in range(sheet.nrows):
+        for row in tqdm(range(sheet.nrows)):
             # 跳过 第一行
             if row == 0:
                 continue
             # 暂停1秒
             sleep(1)
             row_values = sheet.row_values(row)
+            print("当前处理第%d条数据,共%d条数据!" % (row,sheet.nrows))
             print(row_values)
             # 字段名 统一转为大写
             zdm = row_values[0]
@@ -232,16 +290,26 @@ if(__name__=="__main__"):
                 add_button.click()
             except Exception as e:
                 print("获取手动添加按钮失败,重新调用")
+                # 检测提醒    
+                alertMesBox(wait)
+                sleep(1)
                 # 一般都是因为上一个手动编辑的页面框关闭失败导致的，再关闭一次
                 sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
                 sleep(1)
-                sdxgzdCloseBtn.click()
+                #sdxgzdCloseBtn.click()
+                # 使用 JavaScript 执行点击
+                chrome.execute_script("arguments[0].click();", sdxgzdCloseBtn)
                 #然后再次调用 手动新增 按钮
                 add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
+                sleep(2)
+                #这里也会弹窗接口超时
+                # 检测提醒    
+                alertMesBox(wait)
+                # 一切正常 点击手动新增按钮
                 add_button.click()
             
             #定位弹窗的class="el-drawer__wrapper" 有很多个
-            sleep(1)
+            sleep(2)
             drawers = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'el-drawer__wrapper')))
             # 获取最后一个元素 也就是 手动添加的弹窗
             drawerAddForm = drawers[-1]
@@ -249,7 +317,11 @@ if(__name__=="__main__"):
             # 开始输入值 获取所有input标签
             input_elements = drawerAddForm.find_elements(By.TAG_NAME, "input")
             # 一共是有11个
-            #print("一共有%d个input元素" % len(input_elements))
+            print("一共有%d个input元素" % len(input_elements))
+            
+            # 检测提醒    
+            alertMesBox(wait)
+            
             # 开始给对应的输入框赋值 第一个输入框是 源字段名
             input_elements[0].send_keys(zdm)
             # 第二个输入框是 字段中文名
@@ -282,7 +354,9 @@ if(__name__=="__main__"):
             if zdlx == "高精小数(Decimal)":
                 # 字段长度一般只有在字段类型是varchar的时候才有用  数字类型一般就是null，那么就改获取数字长度
                 input_elements[4].send_keys(szcd)
-                input_elements[5].send_keys(xsws)
+                # xsws 并且不能=0
+                if int(xsws) != 0:
+                    input_elements[5].send_keys(xsws)
             elif zdlx == "整数(Integer)":
                 input_elements[4].send_keys(szcd)
             # 第九个是 能否为NULL 默认是不限制非空的 
@@ -300,24 +374,23 @@ if(__name__=="__main__"):
             saveBtn.click()
             
             # 检测页面是否有弹出提示 role="alert" 的元素
-            alert_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[role='alert']")))
-            # 提示框里面的p标签 class=el-message__content 的text
-            alert_P = alert_element.find_element(By.CLASS_NAME, "el-message__content")
-            alert_text = alert_P.text
-            #判断不为空的话 就打印出来
-            if alert_text != "":
-                print(alert_text)
-                sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
-                sleep(1)
-                try:
-                    sdxgzdCloseBtn.click()
-                except Exception as e:
-                    print("获取页面右上角关闭按钮失败,重新调用")
-                    sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
-                    sdxgzdCloseBtn.click()
-                #可以换下一个字段了
-                continue
-            
+            try:
+                alert_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[role='alert']")))
+                # 提示框里面的p标签 class=el-message__content 的text
+                alert_P = alert_element.find_element(By.CLASS_NAME, "el-message__content")
+                alert_text = alert_P.text
+                #判断不为空的话 就打印出来
+                if alert_text != "":
+                    print(alert_text)
+                    print("源字段名已存在，跳过该字段!!!")
+                    chrome.execute_script("arguments[0].click();", sdxgzdCloseBtn)
+                    continue
+            except Exception as e:
+                print("没有捕获到顶部弹窗~")
+                # 判断当前关闭按钮还是不是存在 get_attribute 是否none 状态
+                if sdxgzdCloseBtn.aria_role != 'none':
+                    chrome.execute_script("arguments[0].click();", sdxgzdCloseBtn)
+        
         # 数据模型的字段都修改好了 可以直接点击暂存按钮了
         try:
             zcSave_button.click()
@@ -335,7 +408,30 @@ if(__name__=="__main__"):
         sleep(2)
         close_button.click()
         
+        # 这一个sheet页的数据就都处理完毕了，把sheet页的code存储到redis里面，下次循环就可以跳过这个sheet页了
+        r.set(mxCode, mxCode)
         # 打印分割线
         print("==================================================================================================================")
 
 
+# 主函数
+if(__name__=="__main__"):
+    # 启动次数
+    num = 1
+    # 最大重试次数
+    max_attempts = 1000
+    # 循环执行
+    while True:
+        if num < max_attempts:
+            try:
+                print("自动流程启动第" + num + "次")
+                automationBegins()
+                print("所有任务正常走完了？  程序结束!")
+                break
+            except Exception as e:
+                print("自动化发生了异常，准备重新启动~")
+            finally:
+                num += 1
+        else:
+            print("达到最大启动次数，停止尝试。")
+            break
