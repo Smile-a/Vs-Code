@@ -419,7 +419,7 @@ if(__name__=="__main__"):
     # 启动次数
     num = 1
     # 最大重试次数
-    max_attempts = 1000
+    max_attempts = 10000
     # 循环执行
     while True:
         if num < max_attempts:
