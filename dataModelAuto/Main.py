@@ -15,7 +15,14 @@ xlsPath = 'C:\MyProject\Vs-Code\dataModelAuto\云MES系统实体清单-0326.xls'
 checkXmlPath = 'C:\MyProject\Vs-Code\dataModelAuto\数据模型补充分工表.xls'
 dataMbUrl = 'https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel'
 
+#用来存储成功修改了的数据模型
 r = redis.Redis(host='localhost', port=6379, db=5) 
+#用来存储execle表中sheet名不存在的数据表名,可以考虑手动处理
+er = redis.Redis(host='localhost', port=6379, db=6) 
+#用来存储浏览器没有找到的数据表名,可以考虑手动处理
+nullr = redis.Redis(host='localhost', port=6379, db=7)
+#用来存储模型表名疑似T_P开头的数据表名,可以考虑手动处理
+tpr = redis.Redis(host='localhost', port=6379, db=8)
 
 def alertMesBox(wait):
     try:
@@ -27,7 +34,8 @@ def alertMesBox(wait):
             # 获取里面的button元素确定
             messBoxBtn.find_element(By.TAG_NAME, "button").click()
         else:
-            print("没有检测到弹窗")
+            #print("没有检测到弹窗")
+            pass
     except Exception as e:
         print("没有找到弹窗，不予理会~")
 
@@ -98,6 +106,12 @@ def automationBegins():
         # 截取sheet页名 - 分割 前面是模型英文名称 后面是模型中文名称
         sheetName = sheet.name.split('-')
         print(sheetName)
+        # 如果sheetName 只有一个元素，说明缺少了中文名称 跳过
+        if len(sheetName) < 2:
+            print("Execl中sheet名缺少模型中文名称，跳过")
+            #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
+            er.set(sheet.name, sheet.name)
+            continue
         # 模型英文名称
         mxCode = sheetName[0]
         # 判断这个sheet页模型Code是否已经在redis中
@@ -106,6 +120,12 @@ def automationBegins():
             continue
         # 模型中文名称
         modelChineseName = sheetName[1]
+        # 如果中文名称是空的，跳过
+        if modelChineseName == "":
+            print("Execl中sheet名缺少模型中文名称，跳过")
+            #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
+            er.set(sheet.name, sheet.name)
+            continue
         # 刷新页面
         #chrome.refresh()
         # 再次等待页面加载完毕
@@ -154,6 +174,8 @@ def automationBegins():
         # 判断列表是否为空  先只用code匹配一轮，后面再用名称看看，光用名称好像有点问题.
         if len(trRows) == 0:
             print("没有找到模型："+mxCode)
+            #execl表中有模型信息，但是通过code在浏览器查询没有数据，保存到nullr下后面手动处理
+            er.set(mxCode, modelChineseName)
             continue
             # if len(trRows) == 0:
             #     # 那就说明没有找到 mxCode的模型，切换用模型中文名称试一次
@@ -194,6 +216,12 @@ def automationBegins():
                 # 就是要编辑这一行 这样就能定位到code搜索结果返回多个数据里最符合的那行数据了
                 tr_element = trRows[int(tr_element_num) - 1] #trRows里面是下标 num存的是序号，所以要减一
                 break
+        # 这里有一种情况，有模糊匹配的结果，但是T_P开头，匹配不到 那不还是NONe
+        if tr_element == None:
+            print(f"******没有完全匹配CODE的模板，跳过该项数据,模板code:{mxCode},模型名称:{modelChineseName}******")
+            # 这种情况是通过code可以模糊匹配到数据，但是对应的数据表名有可能是T_P开头这种，就需要手动处理了 用tpr存一下
+            tpr.set(mxCode, modelChineseName)
+            continue
         
         # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
         # 查看tr_element所有子元素  10个td
@@ -339,7 +367,7 @@ def automationBegins():
                 zdlx = "时间(Time)"
             elif zdlx == "Decimal":
                 zdlx = "高精小数(Decimal)"
-            elif zdlx == "Int":
+            elif zdlx == "Int" or zdlx == "Tinyint":
                 zdlx = "整数(Integer)"
             elif zdlx == "Varchar":
                 zdlx = "变长字符(Varchar)"
@@ -419,7 +447,7 @@ if(__name__=="__main__"):
     # 启动次数
     num = 1
     # 最大重试次数
-    max_attempts = 10000
+    max_attempts = 1000
     # 循环执行
     while True:
         if num < max_attempts:
