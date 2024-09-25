@@ -28,8 +28,9 @@ r = redis.Redis(host='localhost', port=6379, db=5 , decode_responses=True)
 #         r.delete(i)
 
 #判断当前字符'A'是否存在于successList集合中
-print(r.sismember('successList', 'A'))
+#print(r.sismember('successList', 'A'))
 
-r.delete('excelErrList')
-r.delete('webDataNullList')
-r.delete('TpList')
+# 删除元素
+# r.delete('excelErrList')
+# r.delete('webDataNullList')
+# r.delete('TpList')
