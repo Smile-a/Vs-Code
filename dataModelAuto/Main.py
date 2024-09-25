@@ -213,7 +213,7 @@ def automationBegins():
         # 这里有一种情况，有模糊匹配的结果，但是T_P开头，匹配不到 那不还是NONe
         if tr_element == None:
             print(f"******没有完全匹配CODE的模板，跳过该项数据,模板code:{mxCode},模型名称:{modelChineseName}******")
-            # 这种情况是通过code可以模糊匹配到数据，但是对应的数据表名有可能是T_P开头这种，就需要手动处理了
+            # 这种情况是通过code可以模糊匹配到数据，但是对应的数据表名有可能是T_P开头这种,以及code模糊相似名称不同的，就需要手动处理了
             r.sadd('TpList', sheet.name)
             continue
         
