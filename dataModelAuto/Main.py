@@ -17,12 +17,6 @@ dataMbUrl = 'https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel'
 
 #用来存储成功修改了的数据模型
 r = redis.Redis(host='localhost', port=6379, db=5) 
-#用来存储execle表中sheet名不存在的数据表名,可以考虑手动处理
-er = redis.Redis(host='localhost', port=6379, db=6) 
-#用来存储浏览器没有找到的数据表名,可以考虑手动处理
-nullr = redis.Redis(host='localhost', port=6379, db=7)
-#用来存储模型表名疑似T_P开头的数据表名,可以考虑手动处理
-tpr = redis.Redis(host='localhost', port=6379, db=8)
 
 def alertMesBox(wait):
     try:
@@ -110,12 +104,12 @@ def automationBegins():
         if len(sheetName) < 2:
             print("Execl中sheet名缺少模型中文名称，跳过")
             #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
-            er.set(sheet.name, sheet.name)
+            r.sadd('excelErrList', sheet.name)
             continue
         # 模型英文名称
         mxCode = sheetName[0]
         # 判断这个sheet页模型Code是否已经在redis中
-        if r.exists(mxCode):
+        if r.sismember('successList', mxCode):
             print("模型"+mxCode+"已经存在，跳过")
             continue
         # 模型中文名称
@@ -124,7 +118,7 @@ def automationBegins():
         if modelChineseName == "":
             print("Execl中sheet名缺少模型中文名称，跳过")
             #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
-            er.set(sheet.name, sheet.name)
+            r.sadd('excelErrList', sheet.name)
             continue
         # 刷新页面
         #chrome.refresh()
@@ -174,8 +168,8 @@ def automationBegins():
         # 判断列表是否为空  先只用code匹配一轮，后面再用名称看看，光用名称好像有点问题.
         if len(trRows) == 0:
             print("没有找到模型："+mxCode)
-            #execl表中有模型信息，但是通过code在浏览器查询没有数据，保存到nullr下后面手动处理
-            er.set(mxCode, modelChineseName)
+            #execl表中有模型信息，但是通过code在浏览器查询没有数据，保存到webDataNullList下后面手动处理
+            r.sadd('webDataNullList', sheet.name)
             continue
             # if len(trRows) == 0:
             #     # 那就说明没有找到 mxCode的模型，切换用模型中文名称试一次
@@ -219,8 +213,8 @@ def automationBegins():
         # 这里有一种情况，有模糊匹配的结果，但是T_P开头，匹配不到 那不还是NONe
         if tr_element == None:
             print(f"******没有完全匹配CODE的模板，跳过该项数据,模板code:{mxCode},模型名称:{modelChineseName}******")
-            # 这种情况是通过code可以模糊匹配到数据，但是对应的数据表名有可能是T_P开头这种，就需要手动处理了 用tpr存一下
-            tpr.set(mxCode, modelChineseName)
+            # 这种情况是通过code可以模糊匹配到数据，但是对应的数据表名有可能是T_P开头这种，就需要手动处理了
+            r.sadd('TpList', sheet.name)
             continue
         
         # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
@@ -436,8 +430,8 @@ def automationBegins():
         sleep(2)
         close_button.click()
         
-        # 这一个sheet页的数据就都处理完毕了，把sheet页的code存储到redis里面，下次循环就可以跳过这个sheet页了
-        r.set(mxCode, mxCode)
+        # 这一个sheet页的数据就都处理完毕了，把sheet页的code存储到redis的successList里面，下次循环就可以跳过这个sheet页了
+        r.sadd("successList", mxCode)
         # 打印分割线
         print("==================================================================================================================")
 
