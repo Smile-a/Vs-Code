@@ -311,7 +311,7 @@ def automationBegins():
                 add_button = tabpanel.find_elements(By.TAG_NAME, "button")[3]
                 add_button.click()
             except Exception as e:
-                print("获取手动添加按钮失败,重新调用")
+                print("重新调用手动添加")
                 # 检测提醒    
                 alertMesBox(wait)
                 sleep(1)
