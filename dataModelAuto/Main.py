@@ -404,7 +404,7 @@ def automationBegins():
                 #判断不为空的话 就打印出来
                 if alert_text != "":
                     print(alert_text)
-                    print("源字段名已存在，跳过该字段!!!")
+                    #print("源字段名已存在，跳过该字段!!!")
                     chrome.execute_script("arguments[0].click();", sdxgzdCloseBtn)
                     continue
             except Exception as e:
@@ -424,7 +424,7 @@ def automationBegins():
             sdxgzdCloseBtn.click()
             #然后再次调用 暂存 按钮
             zcSave_button.click()
-        
+        print("数据模型修改完毕，暂存成功！！！")
         #之后就可以关闭弹窗了，定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
         close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
         sleep(2)
