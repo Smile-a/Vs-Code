@@ -112,7 +112,7 @@ def automationBegins():
         mxCode = sheetName[0]
         # 判断这个sheet页模型Code是否已经在redis中
         if r.sismember('successList', mxCode) or r.sismember('TpList', mxCode) or r.sismember('excelErrList', mxCode) or r.sismember('webDataNullList', mxCode):
-            print("模型"+mxCode+"已经存在，跳过")
+            print("模型"+mxCode+"已经存在Redis中，跳过该项")
             continue
         # 模型中文名称
         modelChineseName = sheetName[1]
