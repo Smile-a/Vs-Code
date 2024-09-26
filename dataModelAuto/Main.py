@@ -89,7 +89,9 @@ def automationBegins():
     # 获取所有的sheet页
     sheet_names = workbook.sheet_names()
     #print(len(sheet_names))
-    for sheet_name in sheet_names:    
+    #for sheet_name in sheet_names:
+    for index, sheet_name in enumerate(sheet_names):
+        print(f"Index: {index}, Sheet Name: {sheet_name}")
         # 跳过 '表关系图' 页
         if sheet_name == '表关系图':
             continue
