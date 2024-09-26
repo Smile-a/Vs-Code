@@ -10,6 +10,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+import sys
+sys.path.append("C:\\MyProject\\Vs-Code\\pyDemo")
+import emileDemo
 
 xlsPath = 'C:\MyProject\Vs-Code\dataModelAuto\云MES系统实体清单-0326.xls'
 checkXmlPath = 'C:\MyProject\Vs-Code\dataModelAuto\数据模型补充分工表.xls'
@@ -461,4 +464,5 @@ if(__name__=="__main__"):
                 num += 1
         else:
             print("达到最大启动次数，停止尝试。")
+            emileDemo.sendEmail("数据中台自动脚本", "自动化流程已达到最大启动次数，脚本终止！")
             break
