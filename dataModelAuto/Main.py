@@ -125,9 +125,15 @@ def automationBegins():
             #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
             r.sadd('excelErrList', sheet.name)
             continue
+        
+        
         # 手动维护，后面改成自动维护  因为excelsheet页中文名称的问题导致的
         if mxCode == "BAS_USER_GROUP_DETAIL":
             modelChineseName = '用户分组管理明细'
+        elif mxCode == "ZS_SILKMAKINGDATAREPORT":
+            modelChineseName = '制丝过程数据上报'
+        
+        
         # 刷新页面
         #chrome.refresh()
         # 再次等待页面加载完毕
