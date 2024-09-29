@@ -21,6 +21,19 @@ dataMbUrl = 'https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel'
 #用来存储成功修改了的数据模型
 r = redis.Redis(host='localhost', port=6379, db=5) 
 
+# 防止网络掉线定时调用接口刷新浏览器页面
+def refreshChrome():
+    options = webdriver.ChromeOptions()
+    # 配置调试端口
+    options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+    #加载谷歌浏览器驱动
+    chrome = webdriver.Chrome(options=options)
+    # 打开指定url
+    chrome.get(dataMbUrl)
+    #刷新页面
+    chrome.refresh()
+    print("刷新页面成功")
+
 def alertMesBox(wait):
     try:
         # 检测一下，当前页面有没有弹窗 一个class="el-message-box__btns" 的消息提醒框，如果有，就获取里面的button元素确定
@@ -114,7 +127,8 @@ def automationBegins():
         # 模型英文名称
         mxCode = sheetName[0]
         # 判断这个sheet页模型Code是否已经在redis中
-        if r.sismember('successList', mxCode) or r.sismember('TpList', sheet.name) or r.sismember('excelErrList', sheet.name) or r.sismember('webDataNullList', sheet.name):
+        #if r.sismember('successList', mxCode) or r.sismember('TpList', sheet.name) or r.sismember('excelErrList', sheet.name) or r.sismember('webDataNullList', sheet.name):
+        if r.sismember('successList', mxCode) or r.sismember('excelErrList', sheet.name) or r.sismember('webDataNullList', sheet.name):
             print("模型"+mxCode+"已经存在Redis中，跳过该项")
             continue
         # 模型中文名称
@@ -132,6 +146,22 @@ def automationBegins():
             modelChineseName = '用户分组管理明细'
         elif mxCode == "ZS_SILKMAKINGDATAREPORT":
             modelChineseName = '制丝过程数据上报'
+        elif mxCode == "LEAF_SELECTION_SHIPMENT_PLAN":
+            modelChineseName = '选叶发货计划'
+        elif mxCode == "LEAF_SELECTION_SHIPMENT_PLANDET":
+            modelChineseName = '选叶发货计划明细'
+        elif mxCode == "QUA_CHEMICAL_RECORD_RESULT":
+            modelChineseName = '化学提取记录明细'
+        elif mxCode == "QUA_CONTROL_WORM_STDDET":
+            modelChineseName = '虫情控制标准明细'
+        elif mxCode == "QUA_JDJY_MONTH_PLAN_DET":
+            modelChineseName = '监督检验月度计划明细'
+        elif mxCode == "QUA_MAIN_FLUE_GAS_XYJ":
+            modelChineseName = '主流烟气吸烟机数采'
+        elif mxCode == "QUA_OFFER_PURCHASE_DET":
+            modelChineseName = '供应品采购申请明细'
+        elif mxCode == "QUA_OFFER_BASEINFO_DET":
+            modelChineseName = '供应品基础信息明细'
         
         
         # 刷新页面
@@ -461,9 +491,14 @@ if(__name__=="__main__"):
         if num < max_attempts:
             try:
                 print(f"自动流程启动第{num}次")
+                # 正常执行脚本任务
                 automationBegins()
                 print("所有任务正常走完了？  程序结束!")
                 break
+                
+                # 刷新浏览器
+                # refreshChrome()
+                # sleep(60)
             except Exception as e:
                 print("自动化发生了异常，准备重新启动~")
             finally:
