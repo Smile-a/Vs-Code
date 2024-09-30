@@ -161,6 +161,31 @@ def automationBegins():
             modelChineseName = '供应品采购申请明细'
         elif mxCode == "QUA_OFFER_BASEINFO_DET":
             modelChineseName = '供应品基础信息明细'
+            
+        elif mxCode == "BASE_LOCAL_CHECK_MEASURE_AND_FE":
+            mxCode =   'BASE_LOCAL_CHECK_MEASURE_AND_FEEDBACK'
+        elif mxCode == "BASE_LOCAL_CHECKAREACOMPARISON_":
+            mxCode = 'BASE_LOCAL_CHECKAREACOMPARISON_DET'
+        elif mxCode == "BASE_TECHDISCIPLINE_INSORDER_DE":
+            mxCode =   'BASE_TECHDISCIPLINE_INSORDER_DETAIL'
+        elif mxCode == "BASE_LOCAL_CHECK_INSPECT_STAND_":
+            mxCode =   'BASE_LOCAL_CHECK_INSPECT_STAND_DET'
+        elif mxCode == "BASE_LOCAL_CHECK_INSPECT_TASK_P":
+            mxCode =   'BASE_LOCAL_CHECK_INSPECT_TASK_PERFORM'
+        elif mxCode == "BASE_LOCAL_CHECK_INSPECT_TASK_P":
+            mxCode =   'BASE_LOCAL_CHECK_INSPECT_TASK_PERFORM_DET'
+        elif mxCode == "PRO_CIGAR_MATERIAL_BALANCE_DET":
+            mxCode =   'PRO_CIGAR_MATERIAL_BALANCE_DET'
+        elif mxCode == "EQU_SPORADICOUTSOURCING_PARTS_D":
+            mxCode =   'EQU_SPORADICOUTSOURCING_PARTS_DET'
+        elif mxCode == "POWER_PRODUCTION_DIRECTIVE_CONF":
+            mxCode =   'POWER_PRODUCTION_DIRECTIVE_CONFIRM'
+        elif mxCode == "PRO_FINISH_PRO_INSTORE_COMPARE_":
+            mxCode =   'PRO_FINISH_PRO_INSTORE_COMPARE_DET'
+        elif mxCode == "PRO_CIGAR_RESIDUE_IN_STORAGE_DE":
+            mxCode =   'PRO_CIGAR_RESIDUE_IN_STORAGE_DET'
+        elif mxCode == "PRO_LEFTOVER_MATERIAL_OUT_DET_B":
+            mxCode =   'PRO_LEFTOVER_MATERIAL_OUT_DET_BAR'
         
         
         # 刷新页面
