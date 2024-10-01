@@ -539,13 +539,13 @@ if(__name__=="__main__"):
             try:
                 print(f"自动流程启动第{num}次")
                 # 正常执行脚本任务
-                automationBegins()
-                print("所有任务正常走完了？  程序结束!")
-                break
+                # automationBegins()
+                # print("所有任务正常走完了？  程序结束!")
+                # break
                 
                 # 刷新浏览器
-                # refreshChrome()
-                # sleep(60)
+                refreshChrome()
+                sleep(60)
             except Exception as e:
                 print("自动化发生了异常，准备重新启动~")
             finally:
