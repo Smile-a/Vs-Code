@@ -95,6 +95,14 @@ def strCheck(str):
         return  "PRO_CIGAR_RESIDUE_UP_STRIP_FEED_DET"
     elif str == "PRO_DEVICE_DETECTION_LOGINFO_DE":
         return  "PRO_DEVICE_DETECTION_LOGINFO_DET"
+    elif str == "PRO_LEFTOVER_MATERIAL_IN_DET_BA":
+        return  "PRO_LEFTOVER_MATERIAL_IN_DET_BAR"
+    elif str == "PRO_LEFTOVER_MATERIAL_OUT_DETAI":
+        return  "PRO_LEFTOVER_MATERIAL_OUT_DETAIL"
+    elif str == "PRO_MACHINE_REQUEST_LIST_BAR_CO":
+        return  "PRO_MACHINE_REQUEST_LIST_BAR_CODE"
+    elif str == "PRO_PACKAGE_OPERATOR_SHIFT_PROD":
+        return  "PRO_PACKAGE_OPERATOR_SHIFT_PRODUCTIONSITUATION"
     elif str.endswith("_"):
         return str + "DET"
     elif str.endswith("_DE"):
