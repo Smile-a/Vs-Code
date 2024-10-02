@@ -21,6 +21,87 @@ dataMbUrl = 'https://szzt-sjzt.hbtobacco.cn/dmm/dam-imm-web/model/dataModel'
 #用来存储成功修改了的数据模型
 r = redis.Redis(host='localhost', port=6379, db=5) 
 
+def strCheck(str):
+    #判断str是否包含指定字符串
+    if str == "CIGAR_PRODUCTION_NUM_CONSUME_DE":
+        return  "CIGAR_PRODUCTION_NUM_CONSUME_DET"
+    elif str == "CIGAR_PRODUCTION_NUM_PROCESS_DE":
+        return  "CIGAR_PRODUCTION_NUM_PROCESS_DET"
+    elif str == "EQU_INFRARED_MOISTUER_METER_CHE":
+        return  "EQU_INFRARED_MOISTUER_METER_CHECK"
+    elif str == "LEAF_SELECTION_PROCESS_ROUTE_DE":
+        return  "LEAF_SELECTION_PROCESS_ROUTE_DET"
+    elif str == "PRO_CHERRYPICK_SHIFTLEADER_SHIF":
+        return  "PRO_CHERRYPICK_SHIFTLEADER_SHIFT"
+    elif str == "PRO_CIGAR_CONSUMPTION_REPORT_DE":
+        return  "PRO_CIGAR_CONSUMPTION_REPORT_DET"
+    elif str == "PRO_CIGAR_RESIDUE_IN_STORAGE_BA":
+        return  "PRO_CIGAR_RESIDUE_IN_STORAGE_BAR_CODE"
+    elif str == "PRO_CIGAR_RESIDUE_IN_STORAGE_DE":
+        return  "PRO_CIGAR_RESIDUE_IN_STORAGE_DET"
+    elif str == "PRO_CIGAR_RESIDUE_UP_STRIP_FEED":
+        return  "PRO_CIGAR_RESIDUE_UP_STRIP_FEED_DET"
+    elif str == "PRO_DEVICE_DETECTION_LOGINFO_DE":
+        return  "PRO_DEVICE_DETECTION_LOGINFO_DET"
+    elif str == "PRO_LEFTOVER_MATERIAL_IN_DET_BA":
+        return  "PRO_LEFTOVER_MATERIAL_IN_DET_BAR"
+    elif str == "PRO_LEFTOVER_MATERIAL_OUT_DETAI":
+        return  "PRO_LEFTOVER_MATERIAL_OUT_DETAIL"
+    elif str == "PRO_MACHINE_REQUEST_LIST_BAR_CO":
+        return  "PRO_MACHINE_REQUEST_LIST_BAR_CODE"
+    elif str == "PRO_PACKAGE_OPERATOR_SHIFT_PROD":
+        return  "PRO_PACKAGE_OPERATOR_SHIFT_PRODUCTIONSITUATION"
+    elif str == "PRO_PACKAGE_SHIFTLEADER_SHIFT_W":
+        return  "PRO_PACKAGE_SHIFTLEADER_SHIFT_WORK_ORDER"
+    elif str == "PRO_RAW_MATERIAL_FEED_RECORD_DE":
+        return  "PRO_RAW_MATERIAL_FEED_RECORD_DET"
+    elif str == "PRO_SILK_OPERATOR_SHIFT_PRODUCT":
+        return  "PRO_SILK_OPERATOR_SHIFT_PRODUCTIONSITUATION"
+    elif str == "PRO_TER_STORE_CIGAR_FEED_MANAGE":
+        return  "PRO_TER_STORE_CIGAR_FEED_MANAGER"
+    elif str == "PRODUCTION_SILKMAKINGMONTHBATCH":
+        return  "PRODUCTION_SILKMAKINGMONTHBATCHPLAN"
+    elif str == "PRODUCTION_SWEETENERREQUEST_SIL":
+        return  "PRODUCTION_SWEETENERREQUEST_SILKDET"
+    elif str == "PRODUCTION_SWEETENERREQUEST_WEE":
+        return  "PRODUCTION_SWEETENERREQUEST_WEEKSILKDET"
+    elif str == "QUA_LEAF_STANDARD_DISCRETEDETAI":
+        return  "QUA_LEAF_STANDARD_DISCRETEDETAIL"
+    elif str == "QUA_TEMPERATURE_HUMIDITY_MONITO":
+        return  "QUA_TEMPERATURE_HUMIDITY_MONITOR_POINT"
+    elif str == "XJY_RAW_MATERIAL_FEED_RECORD_DE":
+        return  "XJY_RAW_MATERIAL_FEED_RECORD_DET"
+    elif str == "BASE_LOCAL_CHECK_INSPECT_STAND_":
+        return  "BASE_LOCAL_CHECK_INSPECT_STAND_DET"
+    elif str == "MPR_STD_FORMULA":
+        return  "MPR_STD_FORMULADEL"
+    elif str == "QUA_LEAFSTEM_STANDARD":
+        return  "QUA_LEAFSTEM_STANDARD_DETAIL"
+    elif str == "QUA_RUN_EVALUAT":
+        return  "QUA_RUN_EVALUAT_SCHEME"
+    elif str.endswith("_"):
+        return str + "DET"
+    elif str.endswith("_DE"):
+        return str + "TAIL"
+    elif str.endswith("_D"):
+        return str + "ET"
+    elif str.endswith("_CONF"):
+        return str + "IRM"
+    elif str.endswith("_B"):
+        return str + "AR"
+    elif str.endswith("_FE"):
+        return str + "EDBACK"
+    elif str.endswith("_DETA"):
+        return str + "IL"
+    elif str.endswith("_ORD"):
+        return str + "ER"
+    elif str.endswith("DE"):
+        return str + "T"
+    elif str.endswith("_PROGRE"):
+        return str +  "SSDET"
+    else:
+        return ''
+
 # 防止网络掉线定时调用接口刷新浏览器页面
 def refreshChrome():
     options = webdriver.ChromeOptions()
@@ -138,55 +219,6 @@ def automationBegins():
             #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
             r.sadd('excelErrList', sheet.name)
             continue
-        
-        
-        # 手动维护，后面改成自动维护  因为excelsheet页中文名称的问题导致的
-        if mxCode == "BAS_USER_GROUP_DETAIL":
-            modelChineseName = '用户分组管理明细'
-        elif mxCode == "ZS_SILKMAKINGDATAREPORT":
-            modelChineseName = '制丝过程数据上报'
-        elif mxCode == "LEAF_SELECTION_SHIPMENT_PLAN":
-            modelChineseName = '选叶发货计划'
-        elif mxCode == "LEAF_SELECTION_SHIPMENT_PLANDET":
-            modelChineseName = '选叶发货计划明细'
-        elif mxCode == "QUA_CHEMICAL_RECORD_RESULT":
-            modelChineseName = '化学提取记录明细'
-        elif mxCode == "QUA_CONTROL_WORM_STDDET":
-            modelChineseName = '虫情控制标准明细'
-        elif mxCode == "QUA_JDJY_MONTH_PLAN_DET":
-            modelChineseName = '监督检验月度计划明细'
-        elif mxCode == "QUA_MAIN_FLUE_GAS_XYJ":
-            modelChineseName = '主流烟气吸烟机数采'
-        elif mxCode == "QUA_OFFER_PURCHASE_DET":
-            modelChineseName = '供应品采购申请明细'
-        elif mxCode == "QUA_OFFER_BASEINFO_DET":
-            modelChineseName = '供应品基础信息明细'
-            
-        elif mxCode == "BASE_LOCAL_CHECK_MEASURE_AND_FE":
-            mxCode =   'BASE_LOCAL_CHECK_MEASURE_AND_FEEDBACK'
-        elif mxCode == "BASE_LOCAL_CHECKAREACOMPARISON_":
-            mxCode = 'BASE_LOCAL_CHECKAREACOMPARISON_DET'
-        elif mxCode == "BASE_TECHDISCIPLINE_INSORDER_DE":
-            mxCode =   'BASE_TECHDISCIPLINE_INSORDER_DETAIL'
-        elif mxCode == "BASE_LOCAL_CHECK_INSPECT_STAND_":
-            mxCode =   'BASE_LOCAL_CHECK_INSPECT_STAND_DET'
-        elif mxCode == "BASE_LOCAL_CHECK_INSPECT_TASK_P":
-            mxCode =   'BASE_LOCAL_CHECK_INSPECT_TASK_PERFORM'
-        elif mxCode == "BASE_LOCAL_CHECK_INSPECT_TASK_P":
-            mxCode =   'BASE_LOCAL_CHECK_INSPECT_TASK_PERFORM_DET'
-        elif mxCode == "PRO_CIGAR_MATERIAL_BALANCE_DET":
-            mxCode =   'PRO_CIGAR_MATERIAL_BALANCE_DET'
-        elif mxCode == "EQU_SPORADICOUTSOURCING_PARTS_D":
-            mxCode =   'EQU_SPORADICOUTSOURCING_PARTS_DET'
-        elif mxCode == "POWER_PRODUCTION_DIRECTIVE_CONF":
-            mxCode =   'POWER_PRODUCTION_DIRECTIVE_CONFIRM'
-        elif mxCode == "PRO_FINISH_PRO_INSTORE_COMPARE_":
-            mxCode =   'PRO_FINISH_PRO_INSTORE_COMPARE_DET'
-        elif mxCode == "PRO_CIGAR_RESIDUE_IN_STORAGE_DE":
-            mxCode =   'PRO_CIGAR_RESIDUE_IN_STORAGE_DET'
-        elif mxCode == "PRO_LEFTOVER_MATERIAL_OUT_DET_B":
-            mxCode =   'PRO_LEFTOVER_MATERIAL_OUT_DET_BAR'
-        
         
         # 刷新页面
         #chrome.refresh()
@@ -516,13 +548,13 @@ if(__name__=="__main__"):
             try:
                 print(f"自动流程启动第{num}次")
                 # 正常执行脚本任务
-                # automationBegins()
-                # print("所有任务正常走完了？  程序结束!")
-                # break
+                automationBegins()
+                print("所有任务正常走完了？  程序结束!")
+                break
                 
                 # 刷新浏览器
-                refreshChrome()
-                sleep(60)
+                # refreshChrome()
+                # sleep(60)
             except Exception as e:
                 print("自动化发生了异常，准备重新启动~")
             finally:
