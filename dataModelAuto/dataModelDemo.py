@@ -103,6 +103,34 @@ def strCheck(str):
         return  "PRO_MACHINE_REQUEST_LIST_BAR_CODE"
     elif str == "PRO_PACKAGE_OPERATOR_SHIFT_PROD":
         return  "PRO_PACKAGE_OPERATOR_SHIFT_PRODUCTIONSITUATION"
+    elif str == "PRO_PACKAGE_SHIFTLEADER_SHIFT_W":
+        return  "PRO_PACKAGE_SHIFTLEADER_SHIFT_WORK_ORDER"
+    elif str == "PRO_RAW_MATERIAL_FEED_RECORD_DE":
+        return  "PRO_RAW_MATERIAL_FEED_RECORD_DET"
+    elif str == "PRO_SILK_OPERATOR_SHIFT_PRODUCT":
+        return  "PRO_SILK_OPERATOR_SHIFT_PRODUCTIONSITUATION"
+    elif str == "PRO_TER_STORE_CIGAR_FEED_MANAGE":
+        return  "PRO_TER_STORE_CIGAR_FEED_MANAGER"
+    elif str == "PRODUCTION_SILKMAKINGMONTHBATCH":
+        return  "PRODUCTION_SILKMAKINGMONTHBATCHPLAN"
+    elif str == "PRODUCTION_SWEETENERREQUEST_SIL":
+        return  "PRODUCTION_SWEETENERREQUEST_SILKDET"
+    elif str == "PRODUCTION_SWEETENERREQUEST_WEE":
+        return  "PRODUCTION_SWEETENERREQUEST_WEEKSILKDET"
+    elif str == "QUA_LEAF_STANDARD_DISCRETEDETAI":
+        return  "QUA_LEAF_STANDARD_DISCRETEDETAIL"
+    elif str == "QUA_TEMPERATURE_HUMIDITY_MONITO":
+        return  "QUA_TEMPERATURE_HUMIDITY_MONITOR_POINT"
+    elif str == "XJY_RAW_MATERIAL_FEED_RECORD_DE":
+        return  "XJY_RAW_MATERIAL_FEED_RECORD_DET"
+    elif str == "BASE_LOCAL_CHECK_INSPECT_STAND_":
+        return  "BASE_LOCAL_CHECK_INSPECT_STAND_DET"
+    elif str == "MPR_STD_FORMULA":
+        return  "MPR_STD_FORMULADEL"
+    elif str == "QUA_LEAFSTEM_STANDARD":
+        return  "QUA_LEAFSTEM_STANDARD_DETAIL"
+    elif str == "QUA_RUN_EVALUAT":
+        return  "QUA_RUN_EVALUAT_SCHEME"
     elif str.endswith("_"):
         return str + "DET"
     elif str.endswith("_DE"):
@@ -182,7 +210,7 @@ def automationBegins():
         # 模型英文名称
         mxCode = sheetName[0]
         # 判断这个sheet页模型Code是否已经在redis中
-        if r.sismember('successList', mxCode) or r.sismember('TpList', sheet.name) or r.sismember('webDataNullList', sheet.name):
+        if r.sismember('successList', mxCode) or r.sismember('TpList', mxCode):
             print("模型"+mxCode+"已经存在Redis中，跳过该项")
             continue
         # 模型中文名称
@@ -522,7 +550,8 @@ def automationBegins():
         # 这一个sheet页的数据就都处理完毕了，把sheet页的code存储到redis的successList里面，下次循环就可以跳过这个sheet页了
         r.sadd("successList", deleteMxCode)
         #因为这个脚本是单独的分支demo。用来处理excel里面的问题数据，所以成功后就要剔除在redis中excelErrList集合里的的excel数据
-        r.srem("excelErrList", deleteMxCode)
+        r.srem("excelErrList", sheet.name)
+        r.srem('webDataNullList', sheet.name)
         # 打印分割线
         print("==================================================================================================================")
 
@@ -539,13 +568,13 @@ if(__name__=="__main__"):
             try:
                 print(f"自动流程启动第{num}次")
                 # 正常执行脚本任务
-                # automationBegins()
-                # print("所有任务正常走完了？  程序结束!")
-                # break
+                automationBegins()
+                print("所有任务正常走完了？  程序结束!")
+                break
                 
                 # 刷新浏览器
-                refreshChrome()
-                sleep(60)
+                # refreshChrome()
+                # sleep(60)
             except Exception as e:
                 print("自动化发生了异常，准备重新启动~")
             finally:
