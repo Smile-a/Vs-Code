@@ -160,7 +160,12 @@ def automationBegins():
         # 按理就俩a标签，第一个是编辑，第二个是删除，获取第一个编辑按钮，然后触发
         edit_button = td_element.find_elements(By.TAG_NAME, "a")[0]
         alertMesBox(wait) # 检测弹出提示框
-        edit_button.click()
+        try:
+            edit_button.click()
+        except Exception as e:
+            r.sadd('stopUsingList', sheet.name)
+            print("编辑按钮触发失败，跳过该项数据")
+            continue
         #太快了没加载出来就会报错
         sleep(2)
         #这时候就要弹出模态框了，进行编辑，把excel的对应数据填写到表单中即可。
