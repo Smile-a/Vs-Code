@@ -153,14 +153,14 @@ def automationBegins():
         # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
         # 查看tr_element所有子元素  10个td
         #print(tr_element.find_elements(By.TAG_NAME, "td").__len__())
-        # 获取最后的td
-        td_element = tr_element.find_elements(By.TAG_NAME, "td")[9]
-        # 查看td里面的所有子元素
-        #print(td_element.find_elements(By.TAG_NAME, "a").__len__())
-        # 按理就俩a标签，第一个是编辑，第二个是删除，获取第一个编辑按钮，然后触发
-        edit_button = td_element.find_elements(By.TAG_NAME, "a")[0]
-        alertMesBox(wait) # 检测弹出提示框
         try:
+            # 获取最后的td
+            td_element = tr_element.find_elements(By.TAG_NAME, "td")[9]
+            # 查看td里面的所有子元素
+            #print(td_element.find_elements(By.TAG_NAME, "a").__len__())
+            # 按理就俩a标签，第一个是编辑，第二个是删除，获取第一个编辑按钮，然后触发
+            edit_button = td_element.find_elements(By.TAG_NAME, "a")[0]
+            alertMesBox(wait) # 检测弹出提示框
             edit_button.click()
         except Exception as e:
             r.sadd('stopUsingList', sheet.name)
