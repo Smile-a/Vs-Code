@@ -80,6 +80,10 @@ def automationBegins():
         row_values = sheet.row_values(row)
         # 将第2列作为code，第3列作为name
         mxCode = row_values[1]
+        # 如果mxCode在redis中，就跳过
+        if r.sismember('successList', mxCode):
+            print("模型"+mxCode+"已经存在Redis中，跳过该项")
+            continue
         mxName = row_values[2]
         #检测弹窗
         alertMesBox(wait)
