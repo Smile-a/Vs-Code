@@ -78,8 +78,11 @@ def connect_fetch():
                     
                     # 判断表名是否已经存在，不存在则添加
                     if not redis_client.sismember("all_tables", tableName):
-                        # 获取表结构
-                        cursor.execute(f"DESCRIBE `{tableName}`")
+                        # 获取表结构  但是没有备注之类
+                        # cursor.execute(f"DESCRIBE `{tableName}`")
+                        
+                        # 用SHOW FULL COLUMNS FROM 就有详细的
+                        cursor.execute(f"SHOW FULL COLUMNS FROM `{tableName}`")
                         columns = cursor.fetchall()
                         print(f"\n{tableName} 表结构（字段名称大写）：")
                         for column in columns:
@@ -145,6 +148,10 @@ def getExcelData() :
                         # 遍历json数据
                         for row in json_data:
                             print(row)
+                            # 如果第九个字段是'' 就把 codeName+row[0] 拼接成新的key，然后添加到redis中
+                            if row[8] == '':
+                                new_key = codeName + row[0]
+                                redis_client.sadd("tableFieldZdsmIsNullList", new_key)
                         # 匹配成功，计数加一
                         success_count+=1
         print(f"成功匹配 {success_count} 条数据")        
@@ -356,20 +363,27 @@ def automationBegins():
                         # 字段名 统一转为大写
                         zdm = row[0]
                         zdm = zdm.upper()
-                        # 字段说明
-                        zdsm = ''
+                        # 字段说明- 也就是字段中文名
+                        zdsm = row[8]
                         # 字段类型
                         zdlx = row[1]
-                        # 字段长度=row[1]字符()里面的数字
+                        # 字段长度=row[1]字符()里面的数字   'VARCHAR(72)'   'DECIMAL(19,2)'
                         zdlx_length = re.findall(r'\d+', zdlx)
-                        zdlx_length = int(zdlx_length[0])
-                        zdcd = zdlx_length
+                        if len(zdlx_length) == 1:
+                            zdcd = int(zdlx_length[0])
+                            xsws = 0
+                        elif len(zdlx_length) == 2:
+                            zdcd = int(zdlx_length[0])
+                            xsws = int(zdlx_length[1])
+                        else:
+                            zdcd = 0
+                            xsws = 0
                         # 能否为NULL   YES NO
-                        nfwn = row[2]
+                        nfwn = row[3]
                         # 是否主键  '' PRI
-                        szcd = row[3]
+                        sfzj = row[4]
                         # 是否默认
-                        sffr = row[4]
+                        sffr = row[5]
                         
                         # 这时候已经获取到了当前行里的所有元素，然后依次进行填充
                         # 先获取当前模态窗里面 id="pane-column" 的元素 这里面会有手动添加按钮和数据列表
@@ -417,42 +431,50 @@ def automationBegins():
                         # 开始给对应的输入框赋值 第一个输入框是 源字段名
                         input_elements[0].send_keys(zdm)
                         # 第二个输入框是 字段中文名
-                        if zdsm == "":
-                            zdsm = zdm
+                        if zdsm == '':
                             if "DOMAINCOL" == zdm:
                                 zdsm = "域"
+                            elif "SRL" == zdm:
+                                zdsm = "顺序号"
+                            elif "STDTEMPLATEID":
+                                zdsm = "工艺标准模板树主表ID"
+                            elif "PRECISION_STR":
+                                zdsm = "精度"
+                            else:
+                                zdsm = zdm
+                                # 记录没有匹配到的字段说明，存到redis中[tableFieldNullList] 表名@字段名
+                                redis_client.sadd("tableFieldZdsmIsNullList", mxCode + "@" + zdm)
                         input_elements[1].send_keys(zdsm)
-                        # 字段类型截取( 默认是字符串  如果没有那就是INT DATE DECIMAL这种类型
-                        zdlxs = zdlx.replace("(", "")
-                        if len(zdlxs) > 3:
+                        # 字段类型截取( 默认是字符串  如果没有(那就是INT DATE DECIMAL这种类型
+                        zdlxs = zdlx.split("(")
+                        if len(zdlxs) == 2:
                             zdlx = zdlxs[0]
                         else:
+                            # 可能就不是varchar(64) 这种类型 也许是DAte或者其他
                             zdlx = zdlxs
                         # 重新拼接zdlx 带中文组装
-                        if zdlx == "Decimal":
+                        if zdlx == "DECIMAL":
                             zdlx = "高精小数(Decimal)"
-                        elif zdlx == "Date":
+                        elif zdlx == "DATETIME":
                             zdlx = "时间(Time)"
-                        elif zdlx == "Decimal":
-                            zdlx = "高精小数(Decimal)"
-                        elif zdlx == "Int" or zdlx == "Tinyint":
+                        elif zdlx == "INT" or zdlx == "TINYINT":
                             zdlx = "整数(Integer)"
-                        elif zdlx == "Varchar":
+                        elif zdlx == "VARCHAR":
                             zdlx = "变长字符(Varchar)"
                         # 不太对，字段类型 input是一个下拉框，直接输入值好像不能成功，要如何操作?
                         input_elements[3].send_keys(zdlx)
                         # 直接这样是不行的，鼠标移动就丢失值，需要 键盘下然后加上回车 就可以了
                         input_elements[3].send_keys(Keys.DOWN, Keys.ENTER)
                         # 第五个输入框是 字段长度
-                        if zdcd != 'null' or zdcd != "":
+                        if zdcd != 'null' or zdcd != "" or zdcd != None or zdcd != 0:
                             input_elements[4].send_keys(zdcd)
                         # 第六个输入框是 小数位 如果zdlx是decimal 才需要设置
                         if zdlx == "高精小数(Decimal)":
                             # 字段长度一般只有在字段类型是varchar的时候才有用  数字类型一般就是null，那么就改获取数字长度
-                            input_elements[4].send_keys(10)
-                            input_elements[5].send_keys(4)
+                            input_elements[4].send_keys(zdcd)
+                            input_elements[5].send_keys(xsws)
                         elif zdlx == "整数(Integer)":
-                            input_elements[4].send_keys(szcd)
+                            input_elements[4].send_keys(zdcd)
                         # 能否为NULL 默认是不限制非空的 
                         if nfwn == "NO":
                             # 数据中为NO 表示不允许为空，单击非空约束控件即可 启用
@@ -519,7 +541,7 @@ def automationBegins():
 
 if __name__ == '__main__':
     # 调用函数 通过mysql获取所有的表和结构到redis中
-    #connect_fetch()
+    # connect_fetch()
     
     # 读取excel里的数据
     # getExcelData()
@@ -528,5 +550,6 @@ if __name__ == '__main__':
     # export_data()
     
     # 调用自动测试函数
-    automationBegins()
+    # automationBegins()
+    
     pass
