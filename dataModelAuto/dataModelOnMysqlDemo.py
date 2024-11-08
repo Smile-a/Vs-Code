@@ -3,7 +3,7 @@ from mysql.connector import Error
 import redis
 import re
 import json
-import os
+import os 
 
 from openpyxl import load_workbook
 from tqdm import tqdm
@@ -205,6 +205,20 @@ def automationBegins():
     print("成功进入数据模型维护页面")
     # 等会
     sleep(5)
+    
+    # 定位搜索框
+    input_search = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//input[@placeholder='输入关键字进行过滤']")))
+    input_search[0].clear()
+    input_search[0].send_keys("云MES系统")
+    # 自动就查询到了云mes，但是需要选中下才行 找到class="el-card__body"的所有元素
+    cloudMesTds = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='el-card__body']//span[@class='el-tooltip item']")))
+    # 太多了 
+    for tree in cloudMesTds:
+        #模糊匹配 是 云MES系统的那一个元素
+        if "云MES系统" in tree.text:
+            print("找到云mes系统，开始点击~")
+            tree.click()
+            break
 
     # 打开excel文件
     workbook = load_workbook(excelPath)
@@ -218,8 +232,17 @@ def automationBegins():
     success_count = 0
     # 遍历列数据并打印
     for data in col_data:
-        if data is not None:  # 检查数据是否不为空                
+        if data is not None:  # 检查数据是否不为空
+            # 先判断这个data在redis的successList里面，如果有就跳过
+            if redis_client.sismember('successList', data.upper()):
+                print("模型"+data+"已经存在Redis的successList中，跳过该项")
+                continue
+            # 拼接码名称 方便匹配redis里的                
             codeName = data.upper() + '@'
+            # 判断codeName是否在redis的modelNameIsNullList里，有就跳过后面自己手动处理，或者有了中文名称再说
+            if redis_client.sismember('modelNameIsNullList', codeName):
+                print("模型"+data+"的code在redis的modelNameIsNullList中，跳过该项")
+                continue
             # 获取redis中的tableDataModel里面全部数据,模糊匹配
             all_data = redis_client.hgetall("tableDataModel")
             for key, value in all_data.items():
@@ -230,18 +253,12 @@ def automationBegins():
                     # tableInof通过@得到数据库名称和描述
                     tableName, tableDesc = tableInof.split('@')
                     
-                    # 获取模型
-                    # 判断这个sheet页模型Code是否已经在redis中
-                    if redis_client.sismember('successList', codeName):
-                        print("模型"+codeName+"已经存在Redis中，跳过该项")
-                        continue
                     # 模型中文名称
                     modelChineseName = tableDesc
                     # 如果中文名称是空的，跳过
                     if modelChineseName == "null":
                         #当有问题的模型，跳过不出来，但是需要把模板的code存到er里面，方便后面手动处理
-                        redis_client.sadd('excelErrList', codeName)
-                    else:
+                        redis_client.sadd('modelNameIsNullList', codeName)
                         continue    
                     # 模型英文名称
                     mxCode = tableName
@@ -332,6 +349,23 @@ def automationBegins():
                     edit_button.click()
                     #太快了没加载出来就会报错
                     sleep(2)
+                    
+                    # 新增bug，有时候会弹窗说编辑操作提示，要点击确定按钮 class="el-message-box"
+                    try:  
+                        #或者直接找class=el-button el-button--default el-button--small el-button--primary 的button按钮 有就直接点击
+                        alertBoxs = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='el-message-box__wrapper']")))
+                        #找到alertBoxs[0]里面的所有button元素
+                        alert_buttons = alertBoxs[0].find_elements(By.TAG_NAME, "button")
+                        for button in alert_buttons:
+                            if button.text == "确定":
+                                alert_button = button
+                                alert_button.click()
+                                print("点击了编辑操作提示弹窗的确定按钮")
+                                sleep(3) # 页面要加载一下
+                                break
+                    except:
+                        print("没有编辑操作提示弹窗，不用管")
+                    
                     #这时候就要弹出模态框了，进行编辑，把excel的对应数据填写到表单中即可。
                     # 获取父级中的 section 元素
                     section_element = wait.until(EC.presence_of_element_located((By.TAG_NAME, 'section')))
@@ -356,10 +390,9 @@ def automationBegins():
                     
                     # 遍历所有的行  目前已知 每页6列 行数未知
                     # 字段名	字段类型(长度)	能否为NULL	是否主键    是否默认	''
-                    for row in tqdm(range(json_data)):
+                    for row in tqdm(json_data):
                         # 暂停1秒
                         sleep(1)
-                        print("当前处理第%d条数据,共%d条数据!" % (row,len(json_data)))
                         # 字段名 统一转为大写
                         zdm = row[0]
                         zdm = zdm.upper()
@@ -466,8 +499,11 @@ def automationBegins():
                         # 直接这样是不行的，鼠标移动就丢失值，需要 键盘下然后加上回车 就可以了
                         input_elements[3].send_keys(Keys.DOWN, Keys.ENTER)
                         # 第五个输入框是 字段长度
-                        if zdcd != 'null' or zdcd != "" or zdcd != None or zdcd != 0:
-                            input_elements[4].send_keys(zdcd)
+                        if zdcd != 'null' and zdcd != "" and zdcd != None and zdcd != 0:
+                            try:
+                                input_elements[4].send_keys(zdcd)
+                            except Exception as e:
+                                print("可能是其他类型，但是没有输入值，跳过")
                         # 第六个输入框是 小数位 如果zdlx是decimal 才需要设置
                         if zdlx == "高精小数(Decimal)":
                             # 字段长度一般只有在字段类型是varchar的时候才有用  数字类型一般就是null，那么就改获取数字长度
@@ -483,7 +519,13 @@ def automationBegins():
                             print(fkysInput.is_enabled())
                             # 使用 JavaScript 执行点击
                             chrome.execute_script("arguments[0].click();", fkysInput)
-                        
+                        # 判断是否是主键 sfzj = PRI 就是主键，其余不管
+                        if sfzj == "PRI":
+                            # 点击主键按钮
+                            zjBtn = input_elements[2]
+                            sleep(1)
+                            print(zjBtn.is_enabled())
+                            chrome.execute_script("arguments[0].click();", zjBtn)
                         #获取里面 class="drawerBtn" 元素里面的 button  这是保存按钮
                         drawerBtnDiv = drawerAddForm.find_element(By.CLASS_NAME, "drawerBtn")
                         saveBtn = drawerBtnDiv.find_element(By.TAG_NAME, "button")
@@ -499,42 +541,39 @@ def automationBegins():
                             if alert_text != "":
                                 print(alert_text)
                                 #print("源字段名已存在，跳过该字段!!!")
+                                sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
                                 chrome.execute_script("arguments[0].click();", sdxgzdCloseBtn)
                                 continue
                         except Exception as e:
                             print("没有捕获到顶部弹窗~")
                             # 判断当前关闭按钮还是不是存在 get_attribute 是否none 状态
+                            sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
                             if sdxgzdCloseBtn.aria_role != 'none':
                                 chrome.execute_script("arguments[0].click();", sdxgzdCloseBtn)
                     
-                        # 数据模型的字段都修改好了 可以直接点击暂存按钮了
-                        try:
-                            zcSave_button.click()
-                        except Exception as e:
-                            print("获取调用暂存按钮失败,重新调用")
-                            # 一般都是因为上一个手动编辑的页面框关闭失败导致的，再关闭一次
-                            sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
-                            sleep(1)
-                            sdxgzdCloseBtn.click()
-                            #然后再次调用 暂存 按钮
-                            zcSave_button.click()
-                        print("数据模型修改完毕，暂存成功！！！")
-                        #之后就可以关闭弹窗了，定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
-                        close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
-                        sleep(2)
-                        close_button.click()
-                        
-                        # 这一个sheet页的数据就都处理完毕了，把sheet页的code存储到redis的successList里面，下次循环就可以跳过这个sheet页了
-                        redis_client.sadd("successList", deleteMxCode)
-                        #因为这个脚本是单独的分支demo。用来处理excel里面的问题数据，所以成功后就要剔除在redis中excelErrList集合里的的excel数据
-                        redis_client.srem("excelErrList", sheet.name)
-                        redis_client.srem('webDataNullList', sheet.name)
-                        
-                        # 匹配成功，计数加一
-                        success_count+=1
-                        
-                        # 打印分割线
-                        print("==================================================================================================================")
+                    # 数据模型的字段都修改好了 可以直接点击暂存按钮了
+                    try:
+                        zcSave_button.click()
+                    except Exception as e:
+                        print("获取调用暂存按钮失败,重新调用")
+                        # 一般都是因为上一个手动编辑的页面框关闭失败导致的，再关闭一次
+                        sdxgzdCloseBtn = drawerAddForm.find_element(By.TAG_NAME, "i")
+                        sleep(1)
+                        sdxgzdCloseBtn.click()
+                        #然后再次调用 暂存 按钮
+                        zcSave_button.click()
+                    print("数据模型修改完毕，暂存成功！！！")
+                    #之后就可以关闭弹窗了，定位 aria-label="close 数据模型管理" 的button 按钮 点击执行关闭数据模型修改模态框
+                    close_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='close 数据模型管理']")))
+                    sleep(2)
+                    close_button.click()
+                    
+                    # 这一个sheet页的数据就都处理完毕了，把sheet页的code存储到redis的successList里面，下次循环就可以跳过这个sheet页了
+                    redis_client.sadd("successList", deleteMxCode)
+                    # 匹配成功，计数加一
+                    success_count+=1
+                    # 打印分割线
+                    print("==================================================================================================================")
     print(f"成功匹配 {success_count} 条数据")    
 
 
@@ -550,6 +589,6 @@ if __name__ == '__main__':
     # export_data()
     
     # 调用自动测试函数
-    # automationBegins()
+    automationBegins()
     
     pass
