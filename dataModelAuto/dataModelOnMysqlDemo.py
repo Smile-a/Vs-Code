@@ -3,7 +3,10 @@ from mysql.connector import Error
 import redis
 import re
 import json
-import os 
+import os
+import sys
+sys.path.append("C:\\MyProject\\Vs-Code\\pyDemo")
+import emileDemo
 
 from openpyxl import load_workbook
 from tqdm import tqdm
@@ -333,7 +336,7 @@ def automationBegins():
                     if tr_element == None:
                         print(f"******没有完全匹配CODE的模板，跳过该项数据,模板code:{mxCode},模型名称:{modelChineseName}******")
                         # 这种情况是通过code可以模糊匹配到数据，但是对应的数据表名有可能是T_P开头这种,以及code模糊相似名称不同的，就需要手动处理了
-                        redis_client.sadd('TpList', sheet.name)
+                        redis_client.sadd('TpList', mxCode + '@' + modelChineseName)
                         continue
                     
                     # 然后通过class=el-table_1_column_10 is-center  is-hidden el-table__cell 定位到 编辑按钮触发
@@ -489,11 +492,17 @@ def automationBegins():
                         if zdlx == "DECIMAL":
                             zdlx = "高精小数(Decimal)"
                         elif zdlx == "DATETIME":
+                            zdlx = "日期时间(Datetime)"
+                        elif zdlx == "DATE":
+                            zdlx = "日期(Date)"
+                        elif zdlx == "TIME":
                             zdlx = "时间(Time)"
                         elif zdlx == "INT" or zdlx == "TINYINT":
                             zdlx = "整数(Integer)"
                         elif zdlx == "VARCHAR":
                             zdlx = "变长字符(Varchar)"
+                        elif zdlx == "BOOLEAN":
+                            zdlx = "布尔值(Boolean)"
                         # 不太对，字段类型 input是一个下拉框，直接输入值好像不能成功，要如何操作?
                         input_elements[3].send_keys(zdlx)
                         # 直接这样是不行的，鼠标移动就丢失值，需要 键盘下然后加上回车 就可以了
@@ -589,6 +598,26 @@ if __name__ == '__main__':
     # export_data()
     
     # 调用自动测试函数
-    automationBegins()
+    # automationBegins()
     
-    pass
+    # 启动次数
+    num = 1
+    # 最大重试次数
+    max_attempts = 100
+    # 循环执行
+    while True:
+        if num < max_attempts:
+            try:
+                print(f"自动流程启动第{num}次")
+                # 正常执行脚本任务
+                automationBegins()
+                print("所有任务正常走完了？  程序结束!")
+                break
+            except Exception as e:
+                print("自动化发生了异常，准备重新启动~")
+            finally:
+                num += 1
+        else:
+            print("达到最大启动次数，停止尝试。")
+            emileDemo.sendEmail("数据中台自动脚本", "自动化流程已达到最大启动次数，脚本终止！")
+            break
